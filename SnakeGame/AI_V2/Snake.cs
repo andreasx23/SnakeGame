@@ -9,42 +9,46 @@ namespace SnakeGame.AI_V2
 {
     public class Snake
     {
-        public int Score = 1;
+        public int Score = 0;
         public int LifeLeft = 200;
         private int _lifetime = 0;
-        private int _x;
-        private int _y;
+        private int _x = 0;
+        private int _y = -1;
         private int _foodItterator = 0;
 
-        public float Fitness;
-        
-        public bool Dead;
-        public bool Replay;
+        public float Fitness = 0;
+
+        public bool Dead = false;
+        public bool Replay = false;
 
         public float[] Vision;
         public float[] Decisions;
 
         public (int x, int y) Head;
-        public readonly List<(int x, int y)> Body;
+        public List<(int x, int y)> Body;
         private readonly List<Food> _foods;
 
         private Food _food;
         public NeuralNet Brain;
+        private char[][] _grid;
+        public static int Height;
+        public static int Width;
 
-        //public Snake()
-        //{
-        //    this = new Snake(SnakeAI.HIDDEN_LAYERS);
-        //}
+        public enum GameObjects
+        {
+            WALL = '#',
+            FLOOR = ' ',
+            FOOD = '@',
+            HEAD = 'x',
+            BODY = '+'
+        }
 
         public Snake(int layers)
         {
-            Head = (SnakeAI.SIZE / 2, SnakeAI.SIZE / 2);
-            Body = new List<(int x, int y)>();
-            for (int i = 1; i <= 2; i++)
-            {
-                Body.Add((Head.x, Head.y + i));
-            }
-            _food = new Food();
+            InitGrid();
+            InitSnake();
+            _food = new Food(_grid);
+
             if (!SnakeAI.IS_HUMAN_PLAYING)
             {
                 Vision = new float[24];
@@ -57,64 +61,48 @@ namespace SnakeGame.AI_V2
 
         public Snake(List<Food> foods)
         {
-            Head = (SnakeAI.SIZE / 2, SnakeAI.SIZE / 2);
-            Body = new List<(int x, int y)>();
-            for (int i = 1; i <= 2; i++)
-            {
-                Body.Add((Head.x, Head.y + i));
-            }
-
+            InitGrid();
+            InitSnake();
             Replay = true;
             Vision = new float[24];
-            Decisions = new float[4];            
+            Decisions = new float[4];
             _foods = new List<Food>(foods.Count);
             foreach (var food in foods)
-            {
                 _foods.Add(food.Clone());
-            }
             _food = _foods[_foodItterator];
-            _foodItterator++;            
+            _foodItterator++;
         }
 
         public bool BodyCollide(int x, int y)
         {
-            if (Body.Contains((x, y)))
-                return true;
-
-            return false;
+            return Body.Contains((x, y));
         }
 
         public bool FoodCollide(int x, int y)
         {
-            if (_food.Position.x == x && _food.Position.y == y)
-                return true;
-
-            return false;
+            return _food.Position.x == x && _food.Position.y == y;
         }
 
         public bool WallCollide(int x, int y)
         {
-            if (x < 0 || x >= SnakeAI.Height || y < 0 || y >= SnakeAI.Width) 
-                return false;
-            else if (SnakeAI.Grid[x][y] == SnakeAI.GetObject(SnakeAI.Objects.WALL))
-                return true;
-            else
-                return false;
+            return _grid[x][y] == GetGameObject(GameObjects.WALL);
         }
 
         public void Show()
         {
-            _food.Show();
+            Console.Clear();
+            _food.Show(_grid);
             foreach (var (x, y) in Body)
             {
-                SnakeAI.Grid[x][y] = SnakeAI.GetObject(SnakeAI.Objects.BODY);
+                _grid[x][y] = GetGameObject(GameObjects.BODY);
             }
-            SnakeAI.Grid[Head.x][Head.y] = SnakeAI.GetObject(SnakeAI.Objects.HEAD);
+            _grid[Head.x][Head.y] = GetGameObject(GameObjects.HEAD);
 
-            SnakeAI.Print();
+            PrintGrid();
             if (Dead)
             {
-                //Maybe clear?
+                //InitGrid();
+                //InitSnake();
             }
         }
 
@@ -139,8 +127,14 @@ namespace SnakeGame.AI_V2
 
         public void Eat()
         {
-            int n = Body.Count - 1;
+            _grid[_food.Position.x][_food.Position.y] = GetGameObject(GameObjects.FLOOR);
             Score++;
+
+            int n = Body.Count - 1;
+            if (n >= 0)
+                Body.Add((Body[n].x, Body[n].y));
+            else
+                Body.Add((Head.x, Head.y));
 
             if (!SnakeAI.IS_HUMAN_PLAYING && !SnakeAI.MODEL_LOADED)
             {
@@ -151,23 +145,18 @@ namespace SnakeGame.AI_V2
                     else
                         LifeLeft += 100;
                 }
+            }
 
-                if (n >= 0)
-                    Body.Add((Body[n].x, Body[n].y));
-                else
-                    Body.Add((Head.x, Head.y));
-
-                if (!Replay)
-                {
-                    _food = new Food();
-                    if (!SnakeAI.IS_HUMAN_PLAYING)
-                        _foods.Add(_food);
-                }
-                else
-                {
-                    _food = _foods[_foodItterator];
-                    _foodItterator++;
-                }
+            if (!Replay)
+            {
+                _food = new Food(_grid);
+                if (!SnakeAI.IS_HUMAN_PLAYING)
+                    _foods.Add(_food);
+            }
+            else
+            {
+                _food = _foods[_foodItterator];
+                _foodItterator++;
             }
         }
 
@@ -182,7 +171,7 @@ namespace SnakeGame.AI_V2
                 Body[i] = prev;
                 prev = temp;
             }
-            SnakeAI.Grid[x][y] = SnakeAI.GetObject(SnakeAI.Objects.FLOOR);
+            _grid[x][y] = GetGameObject(GameObjects.FLOOR);
         }
 
         public Snake CloneForReplay()
@@ -262,71 +251,64 @@ namespace SnakeGame.AI_V2
                 }
             }
 
-            //switch (maxIndex)
-            //{
-            //    case 0:
-            //        MoveUp();
-            //        break;
-            //    case 1:
-            //        MoveDown();
-            //        break;
-            //    case 2:
-            //        MoveLeft();
-            //        break;
-            //    case 3:
-            //        MoveRight();
-            //        break;
-            //    default:
-            //        Console.WriteLine("SUPER ERROR!");
-            //        break;
-            //}
-
-            List<(int x, int y)> directions = new List<(int x, int y)>()
+            switch (maxIndex)
             {
-                (-1, 0), //Up
-                (1, 0), //Down
-                (0, -1), //Left
-                (0, 1), //Right
-            };
-            (int x, int y) = directions[maxIndex];
-            _x = x;
-            _y = y;
+                case 0:
+                    MoveUp();
+                    break;
+                case 1:
+                    MoveDown();
+                    break;
+                case 2:
+                    MoveLeft();
+                    break;
+                case 3:
+                    MoveRight();
+                    break;
+                default:
+                    throw new Exception();
+            }
         }
 
         public void MoveUp()
         {
-            if (_y != SnakeAI.SIZE)
+            if (_x != 1)
             {
-                _x = 0;
-                _y = -SnakeAI.SIZE;
+                _x = -1;
+                _y = 0;
             }
         }
 
         public void MoveDown()
         {
-            if (_y != -SnakeAI.SIZE)
+            if (_x != -1)
             {
-                _x = 0;
-                _y = SnakeAI.SIZE;
+                _x = 1;
+                _y = 0;
             }
         }
 
         public void MoveLeft()
         {
-            if (_x != SnakeAI.SIZE)
+            if (_y != 1)
             {
-                _x = -SnakeAI.SIZE;
-                _y = 0;
+                _x = 0;
+                _y = -1;
             }
         }
 
         public void MoveRight()
         {
-            if (_x != -SnakeAI.SIZE)
+            if (_y != -1)
             {
-                _x = SnakeAI.SIZE;
-                _y = 0;
+                _x = 0;
+                _y = 1;
             }
+        }
+
+        public static char GetGameObject(GameObjects value)
+        {
+            return (char)value;
         }
 
         #region Private helper methods
@@ -346,6 +328,7 @@ namespace SnakeGame.AI_V2
                     foundFood = true;
                     look[0] = 1;
                 }
+
                 if (!foundBody && BodyCollide(dx, dy))
                 {
                     foundBody = true;
@@ -359,6 +342,60 @@ namespace SnakeGame.AI_V2
 
             look[2] = 1 / distance;
             return look;
+        }
+
+        private void InitGrid()
+        {
+            _grid = new char[SnakeAI.SIZE + 2][];
+            Height = _grid.Length;
+            for (int i = 0; i < Height; i++)
+            {
+                _grid[i] = new char[SnakeAI.SIZE + 2];
+            }
+
+            Width = _grid.First().Length;
+            for (int i = 0; i < Height; i++)
+            {
+                _grid[i][0] = GetGameObject(GameObjects.WALL);
+                _grid[i][Width - 1] = GetGameObject(GameObjects.WALL);
+            }
+
+            for (int i = 0; i < Width; i++)
+            {
+                _grid[0][i] = GetGameObject(GameObjects.WALL);
+                _grid[Height - 1][i] = GetGameObject(GameObjects.WALL);
+            }
+
+            for (int i = 1; i < Height - 1; i++)
+            {
+                for (int j = 1; j < Width - 1; j++)
+                {
+                    _grid[i][j] = GetGameObject(GameObjects.FLOOR);
+                }
+            }
+        }
+
+        private void InitSnake()
+        {
+            Head = (SnakeAI.SIZE / 2, SnakeAI.SIZE / 2);
+            Body = new List<(int x, int y)>();
+            for (int i = 1; i <= 2; i++)
+            {
+                Body.Add((Head.x, Head.y + i));
+            }
+        }
+
+        private void PrintGrid()
+        {
+            if (SnakeAI.IS_HUMAN_PLAYING)
+            {
+                Console.WriteLine($"Score: {Score}");
+            }
+
+            foreach (var row in _grid)
+            {
+                Console.WriteLine(string.Join("", row));
+            }
         }
         #endregion
     }

@@ -22,13 +22,9 @@ namespace SnakeGame.AI_V2
         public const bool IS_HUMAN_PLAYING = false;
         public const bool REPLAY_BEST = true;
         public const bool SEE_VISION = false;
-        public const bool MODEL_LOADED = false;
+        public static bool MODEL_LOADED = false;
 
         public static List<int> Evolution;
-
-        public static char[][] Grid;
-        public static int Height;
-        public static int Width;
 
         private Snake _snake;
         private Snake _model;
@@ -36,20 +32,7 @@ namespace SnakeGame.AI_V2
 
         public SnakeAI(int populationSize)
         {
-            InitGrid();
-            //Print();
             Setup(populationSize);
-        }
-
-        public static void Print()
-        {
-            Console.WriteLine();
-            //Console.Clear();
-            //Console.WriteLine($"Highscore: {Highscore}");
-            foreach (var row in Grid)
-            {
-                Console.WriteLine(string.Join("", row));
-            }
         }
 
         public void Setup(int populationSize)
@@ -63,12 +46,27 @@ namespace SnakeGame.AI_V2
 
         public void Draw()
         {
+            KeyPressed();
+
             if (IS_HUMAN_PLAYING)
             {
                 _snake.Move();
                 _snake.Show();
-                Print();
-                if (_snake.Dead) _snake = new Snake(HIDDEN_LAYERS);
+                if (_snake.Dead)
+                {
+                    Console.WriteLine("Game over!");
+                    Console.WriteLine("Press escape to close or any key to play again");
+                    ConsoleKey consoleKey = Console.ReadKey(true).Key;
+                    switch (consoleKey)
+                    {
+                        case ConsoleKey.Escape:
+                            Environment.Exit(1);
+                            break;
+                        default:
+                            _snake = new Snake(HIDDEN_LAYERS);
+                            break;
+                    }
+                }
             }
             else
             {
@@ -79,7 +77,6 @@ namespace SnakeGame.AI_V2
                         Highscore = _population.BestSnake.Score;
                         _population.CalculateFitness();
                         _population.NaturalSelection();
-                        InitGrid();
                     }
                     else
                     {
@@ -96,6 +93,7 @@ namespace SnakeGame.AI_V2
                 }
                 else
                 {
+
                     _model.Look();
                     _model.Think();
                     _model.Move();
@@ -121,7 +119,8 @@ namespace SnakeGame.AI_V2
 
         }
 
-        public void KeyPressed()
+        #region Private helper methods
+        private void KeyPressed()
         {
             if (IS_HUMAN_PLAYING)
             {
@@ -154,57 +153,21 @@ namespace SnakeGame.AI_V2
                             case ConsoleKey.Escape:
                                 Environment.Exit(1);
                                 break;
-                            default:
-                                Console.WriteLine("ERROR!");
-                                break;
                         }
                     }
                 } while (watch.ElapsedMilliseconds < sleepTimeInMs);
             }
-        }
-
-        public static char GetObject(Objects value)
-        {
-            return (char)value;
-        }
-
-        public enum Objects
-        {
-            WALL = '#',
-            FLOOR = ' ',
-            FOOD = '@',
-            HEAD = 'x',
-            BODY = '+'
-        }
-
-        #region Private helper methods
-        private void InitGrid()
-        {
-            Grid = new char[SIZE + 2][];
-            Height = Grid.Length;
-            for (int i = 0; i < Height; i++)
+            else
             {
-                Grid[i] = new char[SIZE + 2];
-            }
-
-            Width = Grid.First().Length;
-            for (int i = 0; i < Height; i++)
-            {
-                Grid[i][0] = GetObject(Objects.WALL);
-                Grid[i][Width - 1] = GetObject(Objects.WALL);
-            }
-
-            for (int i = 0; i < Width; i++)
-            {
-                Grid[0][i] = GetObject(Objects.WALL);
-                Grid[Height - 1][i] = GetObject(Objects.WALL);
-            }
-
-            for (int i = 1; i < Height - 1; i++)
-            {
-                for (int j = 1; j < Width - 1; j++)
+                if (Console.KeyAvailable)
                 {
-                    Grid[i][j] = GetObject(Objects.FLOOR);
+                    ConsoleKey consoleKey = Console.ReadKey(true).Key;
+                    switch (consoleKey)
+                    {
+                        case ConsoleKey.Escape:
+                            Environment.Exit(1);
+                            break;
+                    }
                 }
             }
         }

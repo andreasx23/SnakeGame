@@ -11,15 +11,20 @@ namespace SnakeGame.AI_V2
         public (int x, int y) Position;
         private readonly Random _rand;
 
-        public Food()
+        public Food(char[][] grid)
         {
             _rand = new Random();
-            GenerateFood();
+            GenerateFood(grid);
         }
 
-        public void Show()
+        public Food()
         {
-            SnakeAI.Grid[Position.x][Position.y] = SnakeAI.GetObject(SnakeAI.Objects.FOOD);
+
+        }
+
+        public void Show(char[][] grid)
+        {
+            grid[Position.x][Position.y] = Snake.GetGameObject(Snake.GameObjects.FOOD);
         }
 
         public Food Clone()
@@ -28,19 +33,19 @@ namespace SnakeGame.AI_V2
             return clone;
         }
 
-        private void GenerateFood()
+        private void GenerateFood(char[][] grid)
         {
-            int x = _rand.Next(1, SnakeAI.Height);
-            int y = _rand.Next(1, SnakeAI.Width);
+            int x = _rand.Next(1, Snake.Height);
+            int y = _rand.Next(1, Snake.Width);
 
-            while (SnakeAI.Grid[x][y] != SnakeAI.GetObject(SnakeAI.Objects.FLOOR))
+            while (grid[x][y] != Snake.GetGameObject(Snake.GameObjects.FLOOR))
             {
-                x = _rand.Next(1, SnakeAI.Height);
-                y = _rand.Next(1, SnakeAI.Width);
+                x = _rand.Next(1, Snake.Height);
+                y = _rand.Next(1, Snake.Width);
             }
 
             Position = (x, y);
-            SnakeAI.Grid[x][y] = SnakeAI.GetObject(SnakeAI.Objects.FOOD);
+            grid[x][y] = Snake.GetGameObject(Snake.GameObjects.FOOD);
         }
     }
 }

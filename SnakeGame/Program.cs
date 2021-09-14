@@ -15,19 +15,11 @@ namespace SnakeGame
             //https://pythonawesome.com/train-a-neural-network-to-play-snake-using-a-genetic-algorithm/
             //https://github.com/greerviau/SnakeAI/tree/master/SnakeAI
 
-            SnakeAI ai = new SnakeAI(3);
+            SnakeAI ai = new SnakeAI(2000);
             while (ai.Highscore < 5)
             {
                 ai.Draw();
-                //Thread.Sleep(150);
             }
-
-            //int size = 15;
-            //Player player = new Player();
-            //GameAI game = new GameAI(size, size);
-            //player.Train(game);
-            //Game game = new Game(size, size);
-            //game.Play();
         }
     }
 }

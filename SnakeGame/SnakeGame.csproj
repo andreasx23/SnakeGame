@@ -129,6 +129,7 @@
     <Compile Include="AI_V2\Population.cs" />
     <Compile Include="AI_V2\Snake.cs" />
     <Compile Include="AI_V2\SnakeAI.cs" />
+    <Compile Include="AI_V2\Utility.cs" />
     <Compile Include="Food.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GameAI.cs" />

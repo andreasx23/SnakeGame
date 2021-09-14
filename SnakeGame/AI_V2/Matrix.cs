@@ -12,7 +12,7 @@ namespace SnakeGame.AI_V2
         private readonly int _rows;
         private readonly int _columns;
         private readonly float[][] _matrix;
-        private readonly Random _rand;
+        //private readonly Random _rand;
 
         public Matrix(int row, int column)
         {
@@ -23,7 +23,7 @@ namespace SnakeGame.AI_V2
             {
                 _matrix[i] = new float[_columns];
             }
-            _rand = new Random();
+            //_rand = new Random();
         }
 
         public Matrix(float[][] matrix)
@@ -31,7 +31,7 @@ namespace SnakeGame.AI_V2
             _rows = matrix.Length;
             _columns = matrix.First().Length;
             _matrix = matrix;
-            _rand = new Random();
+            //_rand = new Random();
         }
 
         public void Output()
@@ -67,11 +67,12 @@ namespace SnakeGame.AI_V2
 
         public void Randomize()
         {
+            Random rand = new Random();
             for (int i = 0; i < _rows; i++)
             {
                 for (int j = 0; j < _columns; j++)
                 {
-                    _matrix[i][j] = _rand.Next(-1, 1 + 1); //+1 to include upper
+                    _matrix[i][j] = rand.Next(-1, 1 + 1); //+1 to include upper
                 }
             }
         }
@@ -133,12 +134,13 @@ namespace SnakeGame.AI_V2
 
         public void Mutate(float mutationRate)
         {
+            Random rand = new Random();
             for (int i = 0; i < _rows; i++)
             {
                 for (int j = 0; j < _columns; j++)
                 {
-                    float rand = float.Parse(_rand.Next(1).ToString());
-                    if (rand < mutationRate)
+                    float randValue = Utility.NextFloat(rand);
+                    if (randValue < mutationRate)
                     {
                         _matrix[i][j] = RandomGaussian() / 5;
 
@@ -151,10 +153,11 @@ namespace SnakeGame.AI_V2
 
         public Matrix Crossover(Matrix partner)
         {
+            Random rand = new Random();
             Matrix child = new Matrix(_rows, _columns);
 
-            int randomR = _rand.Next(_rows);
-            int randomC = _rand.Next(_columns);
+            int randomR = rand.Next(0, _rows);
+            int randomC = rand.Next(0, _columns);
             for (int i = 0; i < _rows; i++)
             {
                 for (int j = 0; j < _columns; j++)

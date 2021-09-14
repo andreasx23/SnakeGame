@@ -11,14 +11,14 @@ namespace SnakeGame.AI_V2
         private Snake[] _snakes;
         public Snake BestSnake;
 
-        private int _bestSnakeScore;
-        public int Generation;
-        private int _sameBest;
+        private int _bestSnakeScore = 0;
+        public int Generation = 0;
+        private int _sameBest = 0;
 
-        private float _bestFitness;
-        private float _fitnessSum;
+        private float _bestFitness = 0;
+        private float _fitnessSum = 0;
 
-        private readonly Random _rand;
+        //private readonly Random _rand;
 
         public Population(int size)
         {
@@ -29,15 +29,15 @@ namespace SnakeGame.AI_V2
             }
             BestSnake = _snakes.First().Clone();
             BestSnake.Replay = true;
-            _rand = new Random();
+            //_rand = new Random();
         }
 
         public bool Done()
         {
             if (_snakes.Any(s => !s.Dead) || !BestSnake.Dead)
                 return false;
-
-            return true;
+            else
+                return true;
         }
 
         public void Update()
@@ -100,27 +100,25 @@ namespace SnakeGame.AI_V2
             else
             {
                 BestSnake = BestSnake.CloneForReplay();
-
                 if (_sameBest > 2)
                 {
                     _sameBest = 0;
                     SnakeAI.MUTATION_RATE *= 2;
                 }
                 else
-                {
                     _sameBest++;
-                }
             }
         }
 
         public Snake SelectParent()
         {
-            float rand = float.Parse(_rand.Next(Convert.ToInt32(_fitnessSum.ToString())).ToString());
+            Random rand = new Random();
+            float randValue = Utility.NextFloat(rand);
             float summation = 0;
             for (int i = 0; i < _snakes.Length; i++)
             {
                 summation += _snakes[i].Fitness;
-                if (summation > rand)
+                if (summation > randValue)
                     return _snakes[i];
             }
 
@@ -140,7 +138,7 @@ namespace SnakeGame.AI_V2
                 child.Mutate();
                 newSnakes[i] = child;
             }
-            _snakes = newSnakes.ToArray(); //Might need fixing
+            _snakes = (Snake[])newSnakes.Clone(); //Might need fixing
             SnakeAI.Evolution.Add(_bestSnakeScore);
             Generation++;
         }
@@ -148,17 +146,13 @@ namespace SnakeGame.AI_V2
         public void Mutate()
         {
             for (int i = 1; i < _snakes.Length; i++)
-            {
                 _snakes[i].Mutate();
-            }
         }
 
         public void CalculateFitness()
         {
             foreach (var snake in _snakes)
-            {
                 snake.CalculateFitness();
-            }
         }
 
         private void CalculateFitnessSum()
