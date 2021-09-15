@@ -112,8 +112,7 @@ namespace SnakeGame.AI_V2
 
         public Snake SelectParent()
         {
-            Random rand = new Random();
-            float randValue = Utility.NextFloat(rand);
+            float randValue = Utility.NextFloat(0, _fitnessSum);
             float summation = 0;
             for (int i = 0; i < _snakes.Length; i++)
             {

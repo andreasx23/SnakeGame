@@ -17,9 +17,9 @@ namespace SnakeGame.AI_V2
             GenerateFood(grid);
         }
 
-        public Food()
+        public Food() 
         {
-
+            _rand = new Random();
         }
 
         public void Show(char[][] grid)

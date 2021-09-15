@@ -9,7 +9,7 @@ namespace SnakeGame.AI_V2
 {
     public class SnakeAI
     {
-        public static int SIZE = 20;
+        public const int SIZE = 20;
         public const int HIDDEN_NODES = 16;
         public const int HIDDEN_LAYERS = 2;
         public const int FPS = 100;

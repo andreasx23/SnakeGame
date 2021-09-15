@@ -21,6 +21,7 @@ namespace SnakeGame.AI_V2
             _hiddenNodes = hidden;
             _outputNodes = output;
             _hiddenLayers = hiddenLayers;
+
             _weights = new Matrix[_hiddenLayers + 1];
             _weights[0] = new Matrix(_hiddenNodes, _inputNodes + 1);
             for (int i = 1; i < _hiddenLayers; i++)
@@ -28,6 +29,7 @@ namespace SnakeGame.AI_V2
                 _weights[i] = new Matrix(_hiddenNodes, _hiddenNodes + 1);
             }
             _weights[_weights.Length - 1] = new Matrix(_outputNodes, _hiddenNodes + 1);
+
             foreach (var weight in _weights)
             {
                 weight.Randomize();
@@ -94,7 +96,7 @@ namespace SnakeGame.AI_V2
 
         public Matrix[] Pull()
         {
-            Matrix[] model = _weights.ToArray(); //Clone -- might need fixing
+            Matrix[] model = (Matrix[])_weights.Clone(); //Clone -- might need fixing
             return model;
         }
 
@@ -114,8 +116,6 @@ namespace SnakeGame.AI_V2
                     maxIndex = i;
                 }
             }
-
-            //Maybe not useful for me
         }
     }
 }

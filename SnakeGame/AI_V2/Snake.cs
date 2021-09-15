@@ -9,11 +9,14 @@ namespace SnakeGame.AI_V2
 {
     public class Snake
     {
+        private const int INPUT_LAYERS = 24;
+        private const int OUTPUT_LAYERS = 4;
+
         public int Score = 0;
         public int LifeLeft = 200;
         private int _lifetime = 0;
         private int _x = 0;
-        private int _y = -1;
+        private int _y = 0;
         private int _foodItterator = 0;
 
         public float Fitness = 0;
@@ -30,6 +33,7 @@ namespace SnakeGame.AI_V2
 
         private Food _food;
         public NeuralNet Brain;
+
         private char[][] _grid;
         public static int Height;
         public static int Width;
@@ -51,11 +55,11 @@ namespace SnakeGame.AI_V2
 
             if (!SnakeAI.IS_HUMAN_PLAYING)
             {
-                Vision = new float[24];
-                Decisions = new float[4];
+                Vision = new float[INPUT_LAYERS];
+                Decisions = new float[OUTPUT_LAYERS];
                 _foods = new List<Food> { _food.Clone() };
-                Brain = new NeuralNet(24, SnakeAI.HIDDEN_NODES, 4, layers);
-                Score += 2;
+                Brain = new NeuralNet(INPUT_LAYERS, SnakeAI.HIDDEN_NODES, OUTPUT_LAYERS, layers);
+                Score += 3;
             }
         }
 
@@ -64,13 +68,14 @@ namespace SnakeGame.AI_V2
             InitGrid();
             InitSnake();
             Replay = true;
-            Vision = new float[24];
-            Decisions = new float[4];
+            Vision = new float[INPUT_LAYERS];
+            Decisions = new float[OUTPUT_LAYERS];
             _foods = new List<Food>(foods.Count);
             foreach (var food in foods)
                 _foods.Add(food.Clone());
             _food = _foods[_foodItterator];
             _foodItterator++;
+            Score += 3;
         }
 
         public bool BodyCollide(int x, int y)
@@ -205,13 +210,13 @@ namespace SnakeGame.AI_V2
             {
                 Fitness = (int)Math.Floor(Math.Pow(_lifetime, 2));
                 Fitness *= (int)Math.Pow(2, 10);
-                Fitness *= Score - 9;
+                Fitness *= (Score - 9);
             }
         }
 
         public void Look() //Might be wrong
         {
-            Vision = new float[24];
+            Vision = new float[INPUT_LAYERS];
 
             List<(int x, int y)> directions = new List<(int x, int y)>()
             {
@@ -377,6 +382,7 @@ namespace SnakeGame.AI_V2
 
         private void InitSnake()
         {
+            MoveLeft();
             Head = (SnakeAI.SIZE / 2, SnakeAI.SIZE / 2);
             Body = new List<(int x, int y)>();
             for (int i = 1; i <= 2; i++)

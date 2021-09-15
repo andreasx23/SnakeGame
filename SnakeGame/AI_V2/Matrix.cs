@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SnakeGame.AI_V2
@@ -12,7 +13,7 @@ namespace SnakeGame.AI_V2
         private readonly int _rows;
         private readonly int _columns;
         private readonly float[][] _matrix;
-        //private readonly Random _rand;
+        private readonly Random _rand;
 
         public Matrix(int row, int column)
         {
@@ -23,7 +24,7 @@ namespace SnakeGame.AI_V2
             {
                 _matrix[i] = new float[_columns];
             }
-            //_rand = new Random();
+            _rand = new Random();
         }
 
         public Matrix(float[][] matrix)
@@ -31,7 +32,7 @@ namespace SnakeGame.AI_V2
             _rows = matrix.Length;
             _columns = matrix.First().Length;
             _matrix = matrix;
-            //_rand = new Random();
+            _rand = new Random();
         }
 
         public void Output()
@@ -67,12 +68,11 @@ namespace SnakeGame.AI_V2
 
         public void Randomize()
         {
-            Random rand = new Random();
             for (int i = 0; i < _rows; i++)
             {
                 for (int j = 0; j < _columns; j++)
                 {
-                    _matrix[i][j] = rand.Next(-1, 1 + 1); //+1 to include upper
+                    _matrix[i][j] = _rand.Next(-1, 1 + 1); //+1 to include upper
                 }
             }
         }
@@ -97,7 +97,7 @@ namespace SnakeGame.AI_V2
             {
                 for (int j = 0; j < _columns; j++)
                 {
-                    array[j + 1 * _columns] = _matrix[i][j];
+                    array[j + i * _columns] = _matrix[i][j];
                 }
             }
 
@@ -134,12 +134,11 @@ namespace SnakeGame.AI_V2
 
         public void Mutate(float mutationRate)
         {
-            Random rand = new Random();
             for (int i = 0; i < _rows; i++)
             {
                 for (int j = 0; j < _columns; j++)
                 {
-                    float randValue = Utility.NextFloat(rand);
+                    float randValue = Utility.NextFloat(0, 1);
                     if (randValue < mutationRate)
                     {
                         _matrix[i][j] = RandomGaussian() / 5;
@@ -153,11 +152,10 @@ namespace SnakeGame.AI_V2
 
         public Matrix Crossover(Matrix partner)
         {
-            Random rand = new Random();
             Matrix child = new Matrix(_rows, _columns);
 
-            int randomR = rand.Next(0, _rows);
-            int randomC = rand.Next(0, _columns);
+            int randomR = _rand.Next(0, _rows);
+            int randomC = _rand.Next(0, _columns);
             for (int i = 0; i < _rows; i++)
             {
                 for (int j = 0; j < _columns; j++)
