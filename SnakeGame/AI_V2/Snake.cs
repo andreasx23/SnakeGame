@@ -74,6 +74,7 @@ namespace SnakeGame.AI_V2
             foreach (var food in foods)
                 _foods.Add(food.Clone());
             _food = _foods[_foodItterator];
+            _food.Show(_grid);
             _foodItterator++;
             Score += 3;
         }
@@ -96,18 +97,19 @@ namespace SnakeGame.AI_V2
         public void Show()
         {
             Console.Clear();
-            _food.Show(_grid);
             foreach (var (x, y) in Body)
             {
                 _grid[x][y] = GetGameObject(GameObjects.BODY);
             }
             _grid[Head.x][Head.y] = GetGameObject(GameObjects.HEAD);
+            _food.Show(_grid);
 
             PrintGrid();
             if (Dead)
             {
                 //InitGrid();
                 //InitSnake();
+                //_food.Show(_grid);
             }
         }
 
@@ -130,6 +132,8 @@ namespace SnakeGame.AI_V2
             }
         }
 
+        HashSet<(int x, int y)> test = new HashSet<(int x, int y)>();
+
         public void Eat()
         {
             _grid[_food.Position.x][_food.Position.y] = GetGameObject(GameObjects.FLOOR);
@@ -150,6 +154,14 @@ namespace SnakeGame.AI_V2
                     else
                         LifeLeft += 100;
                 }
+
+                //if (test.Count < 15)
+                //{
+                //    if (!test.Add((Head.x, Head.y)))
+                //    {
+
+                //    }
+                //}
             }
 
             if (!Replay)
@@ -161,6 +173,7 @@ namespace SnakeGame.AI_V2
             else
             {
                 _food = _foods[_foodItterator];
+                _food.Show(_grid);
                 _foodItterator++;
             }
         }
@@ -205,11 +218,11 @@ namespace SnakeGame.AI_V2
         public void CalculateFitness()
         {
             if (Score < 10)
-                Fitness = (int)(Math.Floor(Math.Pow(_lifetime, 2)) * Math.Pow(2, Score));
+                Fitness = (float)(Math.Pow(_lifetime, 2) * Math.Pow(2, Score));
             else
             {
-                Fitness = (int)Math.Floor(Math.Pow(_lifetime, 2));
-                Fitness *= (int)Math.Pow(2, 10);
+                Fitness = (float)Math.Pow(_lifetime, 2);
+                Fitness *= (float)Math.Pow(2, 10);
                 Fitness *= (Score - 9);
             }
         }
@@ -245,69 +258,129 @@ namespace SnakeGame.AI_V2
         public void Think() //think about what direction to move
         {
             Decisions = Brain.Output(Vision);
-            int maxIndex = 0;
-            float max = 0;
-            for (int i = 0; i < Decisions.Length; i++)
-            {
-                if (Decisions[i] > max)
-                {
-                    max = Decisions[i];
-                    maxIndex = i;
-                }
-            }
 
-            switch (maxIndex)
+            for (int i = 0; i < 2; i++)
             {
-                case 0:
-                    MoveUp();
-                    break;
-                case 1:
-                    MoveDown();
-                    break;
-                case 2:
-                    MoveLeft();
-                    break;
-                case 3:
-                    MoveRight();
-                    break;
-                default:
-                    throw new Exception();
+                int maxIndex = 0;
+                float max = 0;
+                for (int j = 0; j < Decisions.Length; j++)
+                {
+                    if (Decisions[j] > max)
+                    {
+                        max = Decisions[j];
+                        maxIndex = j;
+                    }
+                }
+
+                switch (maxIndex)
+                {
+                    case 0:
+                        {
+                            if (!MoveUp())
+                            {
+                                Decisions[maxIndex] = 0;
+                            }
+                            else
+                            {
+                                return;
+                            }
+                            break;
+                        }
+                    case 1:
+                        {
+                            if (!MoveDown())
+                            {
+                                Decisions[maxIndex] = 0;
+                            }
+                            else
+                            {
+                                return;
+                            }
+                            break;
+                        }
+                    case 2:
+                        {
+                            if (!MoveLeft())
+                            {
+                                Decisions[maxIndex] = 0;
+                            }
+                            else
+                            {
+                                return;
+                            }
+                            break;
+                        }
+                    case 3:
+                        {
+                            if (!MoveRight())
+                            {
+                                Decisions[maxIndex] = 0;
+                            }
+                            else
+                            {
+                                return;
+                            }
+                            break;
+                        }
+                    default:
+                        throw new Exception();
+                }
             }
         }
 
-        public void MoveUp()
+        public bool MoveUp()
         {
             if (_x != 1)
             {
                 _x = -1;
                 _y = 0;
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
 
-        public void MoveDown()
+        public bool MoveDown()
         {
             if (_x != -1)
             {
                 _x = 1;
                 _y = 0;
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
 
-        public void MoveLeft()
+        public bool MoveLeft()
         {
             if (_y != 1)
             {
                 _x = 0;
                 _y = -1;
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
 
-        public void MoveRight()
+        public bool MoveRight()
         {
             if (_y != -1)
             {
                 _x = 0;
                 _y = 1;
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
 
@@ -383,6 +456,9 @@ namespace SnakeGame.AI_V2
         private void InitSnake()
         {
             MoveLeft();
+            //if (SnakeAI.IS_HUMAN_PLAYING)
+            //    MoveLeft();
+
             Head = (SnakeAI.SIZE / 2, SnakeAI.SIZE / 2);
             Body = new List<(int x, int y)>();
             for (int i = 1; i <= 2; i++)
@@ -394,9 +470,7 @@ namespace SnakeGame.AI_V2
         private void PrintGrid()
         {
             if (SnakeAI.IS_HUMAN_PLAYING)
-            {
                 Console.WriteLine($"Score: {Score}");
-            }
 
             foreach (var row in _grid)
             {

@@ -1,8 +1,11 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SnakeGame.AI_V2
@@ -35,16 +38,15 @@ namespace SnakeGame.AI_V2
             Setup(populationSize);
         }
 
-        public void Setup(int populationSize)
+        public void Play()
         {
-            Evolution = new List<int>();
-            if (IS_HUMAN_PLAYING)
-                _snake = new Snake(HIDDEN_LAYERS);
-            else
-                _population = new Population(populationSize);
+            while (true)
+            {
+                Draw();
+            }
         }
 
-        public void Draw()
+        private void Draw()
         {
             KeyPressed();
 
@@ -55,7 +57,7 @@ namespace SnakeGame.AI_V2
                 if (_snake.Dead)
                 {
                     Console.WriteLine("Game over!");
-                    Console.WriteLine("Press escape to close or any key to play again");
+                    Console.WriteLine("Press escape to close or any other key to play again");
                     ConsoleKey consoleKey = Console.ReadKey(true).Key;
                     switch (consoleKey)
                     {
@@ -81,7 +83,7 @@ namespace SnakeGame.AI_V2
                     else
                     {
                         _population.Update();
-                        _population.Show();
+                        _population.Show();                        
                     }
 
                     Console.WriteLine($"Generation: {_population.Generation}");
@@ -90,15 +92,19 @@ namespace SnakeGame.AI_V2
                     Console.WriteLine($"Mutation rate: {MUTATION_RATE * 100}%");
                     Console.WriteLine($"Score: {_population.BestSnake.Score}");
                     Console.WriteLine($"Highscore: {Highscore}");
+                    
+                    if (!_population.BestSnake.Dead)
+                    {
+                        Thread.Sleep(1);
+                    }
                 }
                 else
                 {
-
                     _model.Look();
                     _model.Think();
                     _model.Move();
                     _model.Show();
-                    _model.Brain.Show(0, 0, 360, 790, _model.Vision, _model.Decisions);
+                    //_model.Brain.Show(0, 0, 360, 790, _model.Vision, _model.Decisions);
                     if (_model.Dead)
                     {
                         Snake newModel = new Snake(HIDDEN_LAYERS) { Brain = _model.Brain.Clone() };
@@ -116,16 +122,28 @@ namespace SnakeGame.AI_V2
 
         public void FileSelectedOut()
         {
+            var data = JsonConvert.SerializeObject(_population.BestSnake);
 
+
+            //File.WriteAllText("", data);
         }
 
         #region Private helper methods
+        private void Setup(int populationSize)
+        {
+            Evolution = new List<int>();
+            if (IS_HUMAN_PLAYING)
+                _snake = new Snake(HIDDEN_LAYERS);
+            else
+                _population = new Population(populationSize);
+        }
+
         private void KeyPressed()
         {
             if (IS_HUMAN_PLAYING)
             {
                 Stopwatch watch = Stopwatch.StartNew();
-                int sleepTimeInMs = 375;
+                int sleepTimeInMs = 125;
 
                 do
                 {
@@ -137,22 +155,22 @@ namespace SnakeGame.AI_V2
                             case ConsoleKey.A:
                             case ConsoleKey.LeftArrow:
                                 _snake.MoveLeft();
-                                break;
+                                return;
                             case ConsoleKey.D:
                             case ConsoleKey.RightArrow:
                                 _snake.MoveRight();
-                                break;
+                                return;
                             case ConsoleKey.W:
                             case ConsoleKey.UpArrow:
                                 _snake.MoveUp();
-                                break;
+                                return;
                             case ConsoleKey.S:
                             case ConsoleKey.DownArrow:
                                 _snake.MoveDown();
-                                break;
+                                return;
                             case ConsoleKey.Escape:
                                 Environment.Exit(1);
-                                break;
+                                return;
                         }
                     }
                 } while (watch.ElapsedMilliseconds < sleepTimeInMs);

@@ -21,10 +21,11 @@ namespace SnakeGame
             //}
 
             SnakeAI ai = new SnakeAI(2000);
-            while (ai.Highscore < 5)
-            {
-                ai.Draw();
-            }
+            ai.Play();
+            //while (ai.Highscore < 50)
+            //{
+            //    ai.Draw();
+            //}
         }
     }
 }

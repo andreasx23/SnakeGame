@@ -13,7 +13,6 @@ namespace SnakeGame.AI_V2
         private readonly int _rows;
         private readonly int _columns;
         private readonly float[][] _matrix;
-        private readonly Random _rand;
 
         public Matrix(int row, int column)
         {
@@ -24,7 +23,6 @@ namespace SnakeGame.AI_V2
             {
                 _matrix[i] = new float[_columns];
             }
-            _rand = new Random();
         }
 
         public Matrix(float[][] matrix)
@@ -32,7 +30,6 @@ namespace SnakeGame.AI_V2
             _rows = matrix.Length;
             _columns = matrix.First().Length;
             _matrix = matrix;
-            _rand = new Random();
         }
 
         public void Output()
@@ -72,21 +69,22 @@ namespace SnakeGame.AI_V2
             {
                 for (int j = 0; j < _columns; j++)
                 {
-                    _matrix[i][j] = _rand.Next(-1, 1 + 1); //+1 to include upper
+                    _matrix[i][j] = Utility.NextFloat(-1, 1);
                 }
             }
         }
 
         public Matrix SingleColumnMatrixFromArray(float[] array)
         {
-            Matrix n = new Matrix(array.Length, 1);
+            int n = array.Length;
+            Matrix matrix = new Matrix(n, 1);
 
-            for (int i = 0; i < array.Length; i++)
+            for (int i = 0; i < n; i++)
             {
-                n._matrix[i][0] = array[i];
+                matrix._matrix[i][0] = array[i];
             }
 
-            return n;
+            return matrix;
         }
 
         public float[] ToArray()
@@ -141,7 +139,7 @@ namespace SnakeGame.AI_V2
                     float randValue = Utility.NextFloat(0, 1);
                     if (randValue < mutationRate)
                     {
-                        _matrix[i][j] = RandomGaussian() / 5;
+                        _matrix[i][j] += RandomGaussian() / 5;
 
                         if (_matrix[i][j] > 1) _matrix[i][j] = 1;
                         if (_matrix[i][j] < -1) _matrix[i][j] = -1;
@@ -154,13 +152,13 @@ namespace SnakeGame.AI_V2
         {
             Matrix child = new Matrix(_rows, _columns);
 
-            int randomR = _rand.Next(0, _rows);
-            int randomC = _rand.Next(0, _columns);
+            int randomRow = (int)Math.Floor(Utility.NextFloat(0, _rows));
+            int randomColumn = (int)Math.Floor(Utility.NextFloat(0, _columns));
             for (int i = 0; i < _rows; i++)
             {
                 for (int j = 0; j < _columns; j++)
                 {
-                    if (i < randomR || i == randomR && j <= randomC)
+                    if (i < randomRow || i == randomRow && j <= randomColumn)
                         child._matrix[i][j] = _matrix[i][j];
                     else
                         child._matrix[i][j] = partner._matrix[i][j];
