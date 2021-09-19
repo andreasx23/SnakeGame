@@ -47,8 +47,8 @@ namespace SnakeGame.AI_V2
         public float[] Output(float[] inputArray)
         {
             Matrix inputs = _weights.First().SingleColumnMatrixFromArray(inputArray);
-            Matrix currentBias = inputs.AddBias();
 
+            Matrix currentBias = inputs.AddBias();
             for (int i = 0; i < _hiddenLayers; i++)
             {
                 Matrix hiddenIP = _weights[i].Dot(currentBias);

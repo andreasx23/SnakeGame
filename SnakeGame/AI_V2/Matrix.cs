@@ -136,7 +136,7 @@ namespace SnakeGame.AI_V2
             {
                 for (int j = 0; j < _columns; j++)
                 {
-                    float randValue = Utility.NextFloat(0, 1);
+                    float randValue = (float)Utility.NextFloat(0, 1);
                     if (randValue < mutationRate)
                     {
                         _matrix[i][j] += RandomGaussian() / 5;

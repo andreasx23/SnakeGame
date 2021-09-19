@@ -73,22 +73,56 @@ namespace SnakeGame.AI_V2
 
         public void SetBestSnake()
         {
-            float max = 0;
-            int maxIndex = 0;
+            float bestFitnessScore = 0;
+            int bestFitnessScoreIndex = 0;
+
+
+            float currFitness = 0;
+            int index = 0;
+            int sum = 0;
             for (int i = 0; i < _snakes.Length; i++)
             {
-                if (_snakes[i].Fitness > max)
+                if (_snakes[i].Fitness > bestFitnessScore)
                 {
-                    max = _snakes[i].Fitness;
-                    maxIndex = i;
+                    bestFitnessScore = _snakes[i].Fitness;
+                    bestFitnessScoreIndex = i;
+                }
+
+                if (_snakes[i].sum > sum)
+                {
+                    sum = _snakes[i].sum;
+                    index = i;
+                    currFitness = _snakes[i].Fitness;
+                }
+                else if (_snakes[i].sum == sum && _snakes[i].Fitness > bestFitnessScore)
+                {
+                    sum = _snakes[i].sum;
+                    index = i;
+                    currFitness = _snakes[i].Fitness;
                 }
             }
 
-            if (max > _bestFitness)
+            if (bestFitnessScore > _bestFitness)
             {
-                _bestFitness = max;
-                BestSnake = _snakes[maxIndex].CloneForReplay();
-                _bestSnakeScore = _snakes[maxIndex].Score;
+                _bestFitness = bestFitnessScore;
+                BestSnake = _snakes[bestFitnessScoreIndex].CloneForReplay();
+                _bestSnakeScore = _snakes[bestFitnessScoreIndex].Score;
+                _sameBest = 0;
+                SnakeAI.MUTATION_RATE = SnakeAI.defaultMutationRate;
+            }
+            else if (sum > BestSnake.sum)
+            {
+                _bestFitness = currFitness;
+                BestSnake = _snakes[index].CloneForReplay();
+                _bestSnakeScore = _snakes[index].Score;
+                _sameBest = 0;
+                SnakeAI.MUTATION_RATE = SnakeAI.defaultMutationRate;
+            }
+            else if (sum == BestSnake.sum && currFitness > BestSnake.Fitness)
+            {
+                _bestFitness = currFitness;
+                BestSnake = _snakes[index].CloneForReplay();
+                _bestSnakeScore = _snakes[index].Score;
                 _sameBest = 0;
                 SnakeAI.MUTATION_RATE = SnakeAI.defaultMutationRate;
             }

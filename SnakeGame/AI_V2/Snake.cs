@@ -52,6 +52,7 @@ namespace SnakeGame.AI_V2
             InitGrid();
             InitSnake();
             _food = new Food(_grid);
+            _distanceTowardsFood = CalculateManhatten();
 
             if (!SnakeAI.IS_HUMAN_PLAYING)
             {
@@ -77,6 +78,7 @@ namespace SnakeGame.AI_V2
             _food.Show(_grid);
             _foodItterator++;
             Score += 3;
+            _distanceTowardsFood = CalculateManhatten();
         }
 
         public bool BodyCollide(int x, int y)
@@ -113,6 +115,14 @@ namespace SnakeGame.AI_V2
             }
         }
 
+        private int _distanceTowardsFood = -1;
+        public int sum = 0;
+
+        private int CalculateManhatten()
+        {
+            return Math.Abs(Head.x - _food.Position.x) + Math.Abs(Head.y - _food.Position.y);
+        }
+
         public void Move()
         {
             if (!Dead)
@@ -121,6 +131,13 @@ namespace SnakeGame.AI_V2
                 {
                     _lifetime++;
                     LifeLeft--;
+
+                    var newDistance = CalculateManhatten();
+                    if (newDistance > _distanceTowardsFood)
+                        sum--;
+                    else
+                        sum++;
+                    _distanceTowardsFood = newDistance;
                 }
 
                 if (FoodCollide(Head.x, Head.y))
@@ -131,8 +148,6 @@ namespace SnakeGame.AI_V2
                     Dead = true;
             }
         }
-
-        HashSet<(int x, int y)> test = new HashSet<(int x, int y)>();
 
         public void Eat()
         {
@@ -154,14 +169,6 @@ namespace SnakeGame.AI_V2
                     else
                         LifeLeft += 100;
                 }
-
-                //if (test.Count < 15)
-                //{
-                //    if (!test.Add((Head.x, Head.y)))
-                //    {
-
-                //    }
-                //}
             }
 
             if (!Replay)
@@ -176,6 +183,8 @@ namespace SnakeGame.AI_V2
                 _food.Show(_grid);
                 _foodItterator++;
             }
+
+            _distanceTowardsFood = CalculateManhatten();
         }
 
         public void ShiftBody()
@@ -218,10 +227,20 @@ namespace SnakeGame.AI_V2
         public void CalculateFitness()
         {
             if (Score < 10)
-                Fitness = (float)(Math.Pow(_lifetime, 2) * Math.Pow(2, Score));
+            {
+                if (sum > 0)
+                {
+                    Fitness = (float)(Math.Pow(sum, 2) * Math.Pow(2, Score));
+                }
+                else
+                {
+                    Fitness = (float)Math.Pow(2, Score);
+                }
+            }
             else
             {
                 Fitness = (float)Math.Pow(_lifetime, 2);
+                Fitness *= sum;
                 Fitness *= (float)Math.Pow(2, 10);
                 Fitness *= (Score - 9);
             }
@@ -259,73 +278,106 @@ namespace SnakeGame.AI_V2
         {
             Decisions = Brain.Output(Vision);
 
-            for (int i = 0; i < 2; i++)
+            if (true)
             {
                 int maxIndex = 0;
                 float max = 0;
-                for (int j = 0; j < Decisions.Length; j++)
+                for (int i = 0; i < Decisions.Length; i++)
                 {
-                    if (Decisions[j] > max)
+                    if (Decisions[i] > max)
                     {
-                        max = Decisions[j];
-                        maxIndex = j;
+                        max = Decisions[i];
+                        maxIndex = i;
                     }
                 }
 
                 switch (maxIndex)
                 {
                     case 0:
-                        {
-                            if (!MoveUp())
-                            {
-                                Decisions[maxIndex] = 0;
-                            }
-                            else
-                            {
-                                return;
-                            }
-                            break;
-                        }
+                        MoveUp();
+                        break;
                     case 1:
-                        {
-                            if (!MoveDown())
-                            {
-                                Decisions[maxIndex] = 0;
-                            }
-                            else
-                            {
-                                return;
-                            }
-                            break;
-                        }
+                        //MoveLeft();
+                        MoveDown();
+                        break;
                     case 2:
-                        {
-                            if (!MoveLeft())
-                            {
-                                Decisions[maxIndex] = 0;
-                            }
-                            else
-                            {
-                                return;
-                            }
-                            break;
-                        }
+                        //MoveDown();
+                        MoveLeft();
+                        break;
                     case 3:
-                        {
-                            if (!MoveRight())
-                            {
-                                Decisions[maxIndex] = 0;
-                            }
-                            else
-                            {
-                                return;
-                            }
-                            break;
-                        }
+                        MoveRight();
+                        break;
                     default:
                         throw new Exception();
                 }
+            }            
+            else
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    int maxIndex = 0;
+                    float max = 0;
+                    for (int j = 0; j < Decisions.Length; j++)
+                    {
+                        if (Decisions[j] > max)
+                        {
+                            max = Decisions[j];
+                            maxIndex = j;
+                        }
+                    }
+
+                    switch (maxIndex)
+                    {
+                        case 0:
+                            {
+                                if (!MoveUp())
+                                    Decisions[maxIndex] = 0;
+                                else
+                                    return;
+                                break;
+                            }
+                        case 1:
+                            {
+                                //if (!MoveDown())
+                                //    Decisions[maxIndex] = 0;
+                                //else
+                                //    return;
+                                //break;
+
+                                if (!MoveLeft())
+                                    Decisions[maxIndex] = 0;
+                                else
+                                    return;
+                                break;
+                            }
+                        case 2:
+                            {
+                                //if (!MoveLeft())
+                                //    Decisions[maxIndex] = 0;
+                                //else
+                                //    return;
+                                //break;
+
+                                if (!MoveDown())
+                                    Decisions[maxIndex] = 0;
+                                else
+                                    return;
+                                break;
+                            }
+                        case 3:
+                            {
+                                if (!MoveRight())
+                                    Decisions[maxIndex] = 0;
+                                else
+                                    return;
+                                break;
+                            }
+                        default:
+                            throw new Exception();
+                    }
+                }
             }
+            
         }
 
         public bool MoveUp()
@@ -336,10 +388,8 @@ namespace SnakeGame.AI_V2
                 _y = 0;
                 return true;
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
         public bool MoveDown()
@@ -350,10 +400,8 @@ namespace SnakeGame.AI_V2
                 _y = 0;
                 return true;
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
         public bool MoveLeft()
@@ -364,10 +412,8 @@ namespace SnakeGame.AI_V2
                 _y = -1;
                 return true;
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
         public bool MoveRight()
@@ -378,10 +424,8 @@ namespace SnakeGame.AI_V2
                 _y = 1;
                 return true;
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
         public static char GetGameObject(GameObjects value)
