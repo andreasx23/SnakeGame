@@ -142,15 +142,9 @@
     <Compile Include="AI_V2\Snake.cs" />
     <Compile Include="AI_V2\SnakeAI.cs" />
     <Compile Include="AI_V2\Utility.cs" />
-    <Compile Include="Food.cs" />
-    <Compile Include="Game.cs" />
-    <Compile Include="GameAI.cs" />
-    <Compile Include="Model.cs" />
     <Compile Include="AI_V2\NeuralNet.cs" />
-    <Compile Include="Player.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Snake.cs" />
     <Compile Include="SnakeV3\Board.cs" />
     <Compile Include="SnakeV3\Constants.cs" />
     <Compile Include="SnakeV3\Direction.cs" />

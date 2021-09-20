@@ -23,37 +23,42 @@ namespace SnakeGame.SnakeV3
 
         public void SaveNetwork(int score)
         {
-            var path = GetCurrentDirectoryPath();
-            var directoryCombine = Path.Combine(path, DIRECTORY_NAME);
+            string path = GetCurrentDirectoryPath();
+            string directoryCombine = Path.Combine(path, DIRECTORY_NAME);
             if (!Directory.Exists(directoryCombine)) Directory.CreateDirectory(directoryCombine);
 
-            var fileName = $"{score}{SAVE_LOAD_NETWORK_SUFFIX}";
-            var fileCombine = Path.Combine(directoryCombine, fileName);
+            string fileName = $"{score}{SAVE_LOAD_NETWORK_SUFFIX}";
+            string fileCombine = Path.Combine(directoryCombine, fileName);
             if (!File.Exists(fileCombine))
             {
-                var stream = File.Create(fileCombine);
+                FileStream stream = File.Create(fileCombine);
                 stream.Close();
             }
             Save(fileCombine);
         }
 
+        /// <summary>
+        /// Load a presaved network file
+        /// </summary>
+        /// <param name="score">Score of the presaved network file. Leave blank to select file with highest score</param>
+        /// <returns>Returns a presaved network file if one exists else null</returns>
         public static NeuralNetwork LoadNetwork(int score = -1)
         {
-            var path = GetCurrentDirectoryPath();
-            var directoryCombine = Path.Combine(path, DIRECTORY_NAME);
+            string path = GetCurrentDirectoryPath();
+            string directoryCombine = Path.Combine(path, DIRECTORY_NAME);
             if (!Directory.Exists(directoryCombine)) return null;
 
             string fileCombine = string.Empty;
             if (score == -1)
             {
-                var files = Directory.GetFiles(directoryCombine);
+                string[] files = Directory.GetFiles(directoryCombine);
                 int maxScore = -1;
                 foreach (var filePathFromDirectory in files)
                 {
-                    var fileName = Path.GetFileName(filePathFromDirectory);
-                    if (!fileName.Contains(SAVE_LOAD_NETWORK_SUFFIX)) continue;
-                    var split = fileName.Split('-');
-                    var currentScore = int.Parse(split.First());
+                    string fileName = Path.GetFileName(filePathFromDirectory);
+                    if (!fileName.EndsWith(SAVE_LOAD_NETWORK_SUFFIX)) continue;
+                    string[] split = fileName.Split('-');
+                    int currentScore = int.Parse(split.First());
                     if (currentScore > maxScore)
                     {
                         maxScore = currentScore;
@@ -70,14 +75,6 @@ namespace SnakeGame.SnakeV3
             if (!File.Exists(fileCombine)) return null;
             NeuralNetwork neuralNetwork = (NeuralNetwork)Load(fileCombine);
             return neuralNetwork;
-        }
-
-        private static string GetCurrentDirectoryPath()
-        {
-            var path = $@"{Environment.CurrentDirectory}";
-            if (path.Contains("bin\\Debug")) path = path.Replace("bin\\Debug", "");
-            else if (path.Contains("bin\\Release")) path = path.Replace("bin\\Release", "");
-            return path;
         }
 
         public void Mutate()
@@ -105,6 +102,7 @@ namespace SnakeGame.SnakeV3
             return child;
         }
 
+        #region Private helper methods
         private void ChooseWeights(NeuralNetwork other, NeuralNetwork child)
         {
             for (int i = 0; i < layers.Length; i++)
@@ -132,12 +130,12 @@ namespace SnakeGame.SnakeV3
         private double ChooseAlpha(NeuralNetwork other)
         {
             int rand = _rand.Next(0, 3);
-            double ourselfAlpha = GetNetworkAlpha(this);
+            double myAlpha = GetNetworkAlpha(this);
             double otherAlpha = GetNetworkAlpha(other);
 
             switch (rand)
             {
-                case 0: return ourselfAlpha;
+                case 0: return myAlpha;
                 case 1: return otherAlpha;
                 case 2: return _rand.NextDouble();
                 default: throw new Exception("Invalid value exception");
@@ -149,5 +147,14 @@ namespace SnakeGame.SnakeV3
             var activationFunction = (BipolarSigmoidFunction)((ActivationNeuron)network.Layers[0].Neurons[0]).ActivationFunction;
             return activationFunction.Alpha;
         }
+
+        private static string GetCurrentDirectoryPath()
+        {
+            var path = $@"{Environment.CurrentDirectory}";
+            if (path.Contains("bin\\Debug")) path = path.Replace("bin\\Debug", "");
+            else if (path.Contains("bin\\Release")) path = path.Replace("bin\\Release", "");
+            return path;
+        }
+        #endregion
     }
 }

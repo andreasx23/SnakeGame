@@ -12,21 +12,9 @@ namespace SnakeGame
     {
         public static void Main(string[] args)
         {
-            //https://pythonawesome.com/train-a-neural-network-to-play-snake-using-a-genetic-algorithm/
-            //https://github.com/greerviau/SnakeAI/tree/master/SnakeAI
-
-            //Random rand = new Random();
-
-            //for (int i = 0; i < 100; i++)
-            //{
-            //    Console.WriteLine(rand.NextDouble());
-            //}
-
-            //SnakeAI ai = new SnakeAI(2000);
-            //ai.Play();
-
+            bool isHumanPlaying = false;
             int size = 20;
-            SnakeV3.Game game = new SnakeV3.Game(size, size, false);
+            Game game = new Game(size, size, isHumanPlaying);
             game.Play();
         }
     }

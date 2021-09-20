@@ -14,7 +14,7 @@ namespace SnakeGame.SnakeV3
         private readonly int _width;
         private readonly bool _isHumanPlaying;
 
-        private NeuralNetwork _bestBoardBrain;
+        private NeuralNetwork _bestBrain;
         private int _bestScore = 0;
         private int _bestFitness = 0;
         private int _generation = 1;
@@ -30,10 +30,18 @@ namespace SnakeGame.SnakeV3
                 _boards.Add(new Board(_height, _width, isHumanPlaying));
             else
             {
-                for (int i = 0; i < 20000; i++)
+                bool shouldLoadPresavedNetworkFile = true;
+                for (int i = 0; i < 5000; i++)
                 {
-                    var load = NeuralNetwork.LoadNetwork();
-                    _boards.Add(new Board(_height, _width, load));
+                    if (shouldLoadPresavedNetworkFile)
+                    {
+                        var load = NeuralNetwork.LoadNetwork(40);
+                        _boards.Add(new Board(_height, _width, load));
+                    }
+                    else
+                    {
+                        _boards.Add(new Board(_height, _width, isHumanPlaying));
+                    }
                 }
             }
         }
@@ -54,30 +62,36 @@ namespace SnakeGame.SnakeV3
                         board.Play();
                     }
 
-                    var score = -1;
-                    var bestScoreIndex = -1;
-                    for (int i = 0; i < _boards.Count; i++)
+                    int n = _boards.Count;
+                    var bestScoreThisGeneration = -1;
+                    var bestScoreIndexThisGeneration = -1;
+                    for (int i = 0; i < n; i++)
                     {
-                        if (_boards[i].Score > score)
+                        if (_boards[i].Score > bestScoreThisGeneration)
                         {
-                            score = _boards[i].Score;
-                            bestScoreIndex = i;
+                            bestScoreThisGeneration = _boards[i].Score;
+                            bestScoreIndexThisGeneration = i;
                         }
                     }
 
-                    if (_bestBoardBrain == null || score > _bestScore)
+                    if (_bestBrain == null || bestScoreThisGeneration > _bestScore)
                     {
-                        _bestBoardBrain = _boards[bestScoreIndex].Brain;
-                        _bestScore = score;
-                        _bestBoardBrain.SaveNetwork(_bestScore);
-                        _boards[bestScoreIndex].PlayReplay();
+                        _bestBrain = _boards[bestScoreIndexThisGeneration].Brain;
+                        _bestScore = bestScoreThisGeneration;
+                        _bestBrain.SaveNetwork(_bestScore);
+                        _boards[bestScoreIndexThisGeneration].PlayReplay();
                     }
 
                     Console.WriteLine($"Best score: {_bestScore}");
                     Console.WriteLine($"Generation: {_generation}");
-                    for (int i = 0; i < _boards.Count; i++)
+                    Console.WriteLine($"Population size: {n}");
+                    Console.WriteLine($"Best score this generation: {bestScoreThisGeneration}");
+                    var averageScore = _boards.Average(b => b.Score);
+                    Console.WriteLine($"Average score this generation: {averageScore}");
+                    Console.WriteLine(Environment.NewLine);
+                    for (int i = 0; i < n; i++)
                     {
-                        var child = _bestBoardBrain.Breed(_boards[i].Brain);
+                        var child = _bestBrain.Breed(_boards[i].Brain);
                         child.Mutate();
                         _boards[i] = new Board(_height, _width, child);
                     }

@@ -95,17 +95,16 @@ namespace SnakeGame.SnakeV3
                 }
 
                 if (_isHumanPlaying)
-                    DrawMap();
+                    PrintGrid();
             }
-
-            if (!_isHumanPlaying)
-                CalculateFitness();
 
             if (_isHumanPlaying)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("GAME OVER!");
             }
+            else
+                CalculateFitness();
         }
 
         public void PlayReplay()
@@ -128,7 +127,7 @@ namespace SnakeGame.SnakeV3
                 }
 
                 ShiftBody(x, y);
-                DrawMap();
+                PrintGrid();
             }
 
             _gameState = GameState.DONE;
@@ -172,7 +171,7 @@ namespace SnakeGame.SnakeV3
             }
         }
 
-        private void DrawMap()
+        private void PrintGrid()
         {
             Console.Clear();
             Console.WriteLine($"Score: {Score}");
@@ -210,9 +209,9 @@ namespace SnakeGame.SnakeV3
 
             if (_gameState != GameState.REPLAY)
             {
+                _food.GenerateFood(_grid);
                 if (!_isHumanPlaying)
                 {
-                    _food.GenerateFood(_grid);
                     _replayFood.Add((_food.Position.x, _food.Position.y));
 
                     if (_movesLeft < 500)
@@ -286,10 +285,10 @@ namespace SnakeGame.SnakeV3
         {
             List<(int x, int y)> dirs = new List<(int x, int y)>()
             {
-                (0, -1),
-                (1, 0),
-                (0, 1),
-                (-1, 0)
+                (0, -1), //Left
+                (1, 0), //Down
+                (0, 1), //Right
+                (-1, 0) //Up
             };
 
             double[] input = new double[Constants.INPUTS_COUNT];
