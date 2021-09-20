@@ -1,7 +1,9 @@
 ﻿using AForge.Neuro;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -15,8 +17,8 @@ namespace SnakeGame.SnakeV3
 
         private int _movesLeft = 200;
         private int _totalMoves = 0;
-        private readonly List<(int x, int y)> _replayBody;
-        private readonly List<(int x, int y)> _replayFood;
+        private List<(int x, int y)> _replayBody;
+        private List<(int x, int y)> _replayFood;
 
         private GameObject[][] _grid;
         private readonly int _height;
@@ -107,7 +109,7 @@ namespace SnakeGame.SnakeV3
                 CalculateFitness();
         }
 
-        public void PlayReplay()
+        public void PlayReplay(bool saveReplay = false)
         {
             _gameState = GameState.REPLAY;
             InitBoardAndSnake();
@@ -131,6 +133,33 @@ namespace SnakeGame.SnakeV3
             }
 
             _gameState = GameState.DONE;
+
+            if (saveReplay)
+                SaveReplay();
+        }
+
+        public void LoadReplay()
+        {
+            var file = "";
+            List<List<(int x, int y)>> replay = JsonConvert.DeserializeObject<List<List<(int x, int y)>>>(file);
+            _replayBody = replay.First();
+            _replayFood = replay.Last();
+            PlayReplay();
+        }
+
+        private void SaveReplay()
+        {
+            List<List<(int x, int y)>> replay = new List<List<(int x, int y)>>() { _replayBody, _replayFood };
+            var replayBody = JsonConvert.SerializeObject(replay);
+            string path = Utility.GetCurrentDirectoryPath();
+            var directoryName = "SavedReplays";
+            var directoryCombine = Path.Combine(path, directoryName);
+            if (!Directory.Exists(directoryName)) Directory.CreateDirectory(directoryCombine);
+            var fileName = $"{Score}-{DateTime.Now}.txt";
+            var fileCombine = Path.Combine(directoryCombine, fileName);
+            var stream = File.Create(fileCombine);
+            stream.Close();
+            File.WriteAllText(fileCombine, replayBody);
         }
 
         public void MoveLeft()

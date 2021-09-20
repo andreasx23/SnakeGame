@@ -23,7 +23,7 @@ namespace SnakeGame.SnakeV3
 
         public void SaveNetwork(int score)
         {
-            string path = GetCurrentDirectoryPath();
+            string path = Utility.GetCurrentDirectoryPath();
             string directoryCombine = Path.Combine(path, DIRECTORY_NAME);
             if (!Directory.Exists(directoryCombine)) Directory.CreateDirectory(directoryCombine);
 
@@ -44,7 +44,7 @@ namespace SnakeGame.SnakeV3
         /// <returns>Returns a presaved network file if one exists else null</returns>
         public static NeuralNetwork LoadNetwork(int score = -1)
         {
-            string path = GetCurrentDirectoryPath();
+            string path = Utility.GetCurrentDirectoryPath();
             string directoryCombine = Path.Combine(path, DIRECTORY_NAME);
             if (!Directory.Exists(directoryCombine)) return null;
 
@@ -146,14 +146,6 @@ namespace SnakeGame.SnakeV3
         {
             var activationFunction = (BipolarSigmoidFunction)((ActivationNeuron)network.Layers[0].Neurons[0]).ActivationFunction;
             return activationFunction.Alpha;
-        }
-
-        private static string GetCurrentDirectoryPath()
-        {
-            var path = $@"{Environment.CurrentDirectory}";
-            if (path.Contains("bin\\Debug")) path = path.Replace("bin\\Debug", "");
-            else if (path.Contains("bin\\Release")) path = path.Replace("bin\\Release", "");
-            return path;
         }
         #endregion
     }

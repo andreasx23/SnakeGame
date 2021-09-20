@@ -31,17 +31,16 @@ namespace SnakeGame.SnakeV3
             else
             {
                 bool shouldLoadPresavedNetworkFile = true;
-                for (int i = 0; i < 5000; i++)
+                int populationSize = 5000;
+                for (int i = 0; i < populationSize; i++)
                 {
                     if (shouldLoadPresavedNetworkFile)
                     {
-                        var load = NeuralNetwork.LoadNetwork(40);
+                        var load = NeuralNetwork.LoadNetwork();
                         _boards.Add(new Board(_height, _width, load));
                     }
                     else
-                    {
                         _boards.Add(new Board(_height, _width, isHumanPlaying));
-                    }
                 }
             }
         }
@@ -85,10 +84,11 @@ namespace SnakeGame.SnakeV3
                     Console.WriteLine($"Best score: {_bestScore}");
                     Console.WriteLine($"Generation: {_generation}");
                     Console.WriteLine($"Population size: {n}");
+                    Console.WriteLine($"Total games played this session: {_generation * n}");
                     Console.WriteLine($"Best score this generation: {bestScoreThisGeneration}");
                     var averageScore = _boards.Average(b => b.Score);
                     Console.WriteLine($"Average score this generation: {averageScore}");
-                    Console.WriteLine(Environment.NewLine);
+                    Console.WriteLine();
                     for (int i = 0; i < n; i++)
                     {
                         var child = _bestBrain.Breed(_boards[i].Brain);
