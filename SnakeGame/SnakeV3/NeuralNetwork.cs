@@ -73,6 +73,7 @@ namespace SnakeGame.SnakeV3
             }
 
             if (!File.Exists(fileCombine)) return null;
+
             NeuralNetwork neuralNetwork = (NeuralNetwork)Load(fileCombine);
             return neuralNetwork;
         }

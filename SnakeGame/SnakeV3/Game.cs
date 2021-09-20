@@ -78,7 +78,7 @@ namespace SnakeGame.SnakeV3
                         _bestBrain = _boards[bestScoreIndexThisGeneration].Brain;
                         _bestScore = bestScoreThisGeneration;
                         _bestBrain.SaveNetwork(_bestScore);
-                        _boards[bestScoreIndexThisGeneration].PlayReplay();
+                        _boards[bestScoreIndexThisGeneration].PlayReplay(true);
                     }
 
                     Console.WriteLine($"Best score: {_bestScore}");

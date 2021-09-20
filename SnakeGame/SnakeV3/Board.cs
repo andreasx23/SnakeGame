@@ -17,12 +17,11 @@ namespace SnakeGame.SnakeV3
 
         private int _movesLeft = 200;
         private int _totalMoves = 0;
-        private List<(int x, int y)> _replayBody;
-        private List<(int x, int y)> _replayFood;
+        private ReplayDTO _replay;
 
         private GameObject[][] _grid;
-        private readonly int _height;
-        private readonly int _width;
+        private int _height;
+        private int _width;
         private GameState _gameState;
         private readonly Food _food;
         public int Score;
@@ -47,10 +46,9 @@ namespace SnakeGame.SnakeV3
             if (!_isHumanPlaying)
             {
                 Brain = new NeuralNetwork(new BipolarSigmoidFunction(Constants.ALPHA), Constants.INPUTS_COUNT, Constants.NEURONS, Constants.OUTPUT_COUNT);
-                _replayBody = new List<(int x, int y)>();
-                _replayFood = new List<(int x, int y)>();
-                _replayBody.Add((_head.x, _head.y));
-                _replayFood.Add((_food.Position.x, _food.Position.y));
+                _replay = new ReplayDTO(_height, _width);
+                _replay.ReplayBody.Add((_head.x, _head.y));
+                _replay.ReplayFood.Add((_food.Position.x, _food.Position.y));
             }
         }
 
@@ -64,10 +62,9 @@ namespace SnakeGame.SnakeV3
             _gameState = GameState.PLAYING;
             _isHumanPlaying = false;
             Brain = brain;
-            _replayBody = new List<(int x, int y)>();
-            _replayFood = new List<(int x, int y)>();
-            _replayBody.Add((_head.x, _head.y));
-            _replayFood.Add((_food.Position.x, _food.Position.y));
+            _replay = new ReplayDTO(_height, _width);
+            _replay.ReplayBody.Add((_head.x, _head.y));
+            _replay.ReplayFood.Add((_food.Position.x, _food.Position.y));
         }
 
         public void Play()
@@ -93,7 +90,7 @@ namespace SnakeGame.SnakeV3
                     _gameState = GameState.DONE;
 
                     if (!_isHumanPlaying)
-                        _replayFood.Add((_food.Position.x, _food.Position.y));
+                        _replay.ReplayFood.Add((_food.Position.x, _food.Position.y));
                 }
 
                 if (_isHumanPlaying)
@@ -118,48 +115,33 @@ namespace SnakeGame.SnakeV3
             Console.WriteLine("Replay");
 
             int foodIndex = 0;
-            _grid[_replayFood[foodIndex].x][_replayFood[foodIndex].y] = GameObject.FOOD;
-            foreach (var (x, y) in _replayBody)
+            _grid[_replay.ReplayFood[foodIndex].x][_replay.ReplayFood[foodIndex].y] = GameObject.FOOD;
+            foreach (var (x, y) in _replay.ReplayBody)
             {
-                if (FoodCollide(_replayFood[foodIndex].x, _replayFood[foodIndex].y))
+                if (FoodCollide(_replay.ReplayFood[foodIndex].x, _replay.ReplayFood[foodIndex].y))
                 {
                     Eat();
                     foodIndex++;
-                    _grid[_replayFood[foodIndex].x][_replayFood[foodIndex].y] = GameObject.FOOD;
+                    _grid[_replay.ReplayFood[foodIndex].x][_replay.ReplayFood[foodIndex].y] = GameObject.FOOD;
                 }
 
                 ShiftBody(x, y);
                 PrintGrid();
             }
 
-            _gameState = GameState.DONE;
-
             if (saveReplay)
-                SaveReplay();
+                _replay.SaveReplay(Score);
+
+            _gameState = GameState.DONE;
         }
 
-        public void LoadReplay()
+        public void LoadReplay(string replayFileName)
         {
-            var file = "";
-            List<List<(int x, int y)>> replay = JsonConvert.DeserializeObject<List<List<(int x, int y)>>>(file);
-            _replayBody = replay.First();
-            _replayFood = replay.Last();
+            var reply = ReplayDTO.LoadReplay(replayFileName);
+            _height = reply.Height;
+            _width = reply.Width;
+            _replay = reply;
             PlayReplay();
-        }
-
-        private void SaveReplay()
-        {
-            List<List<(int x, int y)>> replay = new List<List<(int x, int y)>>() { _replayBody, _replayFood };
-            var replayBody = JsonConvert.SerializeObject(replay);
-            string path = Utility.GetCurrentDirectoryPath();
-            var directoryName = "SavedReplays";
-            var directoryCombine = Path.Combine(path, directoryName);
-            if (!Directory.Exists(directoryName)) Directory.CreateDirectory(directoryCombine);
-            var fileName = $"{Score}-{DateTime.Now}.txt";
-            var fileCombine = Path.Combine(directoryCombine, fileName);
-            var stream = File.Create(fileCombine);
-            stream.Close();
-            File.WriteAllText(fileCombine, replayBody);
         }
 
         public void MoveLeft()
@@ -241,7 +223,7 @@ namespace SnakeGame.SnakeV3
                 _food.GenerateFood(_grid);
                 if (!_isHumanPlaying)
                 {
-                    _replayFood.Add((_food.Position.x, _food.Position.y));
+                    _replay.ReplayFood.Add((_food.Position.x, _food.Position.y));
 
                     if (_movesLeft < 500)
                     {
@@ -269,7 +251,7 @@ namespace SnakeGame.SnakeV3
 
             bool isAlive = true;
             if (WallCollide() || BodyCollide()) isAlive = false;
-            if (!_isHumanPlaying && _gameState != GameState.REPLAY) _replayBody.Add((_head.x, _head.y));
+            if (!_isHumanPlaying && _gameState != GameState.REPLAY) _replay.ReplayBody.Add((_head.x, _head.y));
 
             _grid[_head.x][_head.y] = GameObject.HEAD;
             for (int i = 0; i < _body.Count; i++)
