@@ -89,6 +89,7 @@ namespace SnakeGame.SnakeV3
                     var averageScore = _boards.Average(b => b.Score);
                     Console.WriteLine($"Average score this generation: {averageScore}");
                     Console.WriteLine();
+
                     for (int i = 0; i < n; i++)
                     {
                         var child = _bestBrain.Breed(_boards[i].Brain);

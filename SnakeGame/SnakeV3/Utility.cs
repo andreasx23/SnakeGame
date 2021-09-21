@@ -38,5 +38,40 @@ namespace SnakeGame.SnakeV3
 
             return false;
         }
+
+        private static string _clearBuffer = null; // Clear this if window size changes
+        private static int _windowWidth = -1, _windowHeight = -1;
+        public static void ClearConsole()
+        {
+            if (_clearBuffer == null)
+            {
+                SetClearBuffer();
+            }
+            else
+            {
+                if (_windowWidth != Console.WindowWidth || _windowHeight != Console.WindowHeight)
+                {
+                    Console.Clear();
+                    SetClearBuffer();
+                }
+            }
+
+            Console.SetCursorPosition(0, 0);
+            Console.Write(_clearBuffer);
+            Console.SetCursorPosition(0, 0);
+        }
+
+        private static void SetClearBuffer()
+        {
+            _windowWidth = Console.WindowWidth;
+            _windowHeight = Console.WindowHeight;
+            var line = string.Empty.PadLeft(_windowWidth + 2, ' ');
+            var lines = new StringBuilder();
+
+            for (var i = 0; i < _windowHeight + 2; i++) 
+                lines.AppendLine(line);
+
+            _clearBuffer = lines.ToString();
+        }
     }
 }

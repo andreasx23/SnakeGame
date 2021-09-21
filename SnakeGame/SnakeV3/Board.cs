@@ -184,8 +184,9 @@ namespace SnakeGame.SnakeV3
 
         private void PrintGrid()
         {
-            Console.Clear();
+            Utility.ClearConsole();
             Console.WriteLine($"Score: {Score}");
+
             for (int i = 0; i < _height; i++)
             {
                 for (int j = 0; j < _width; j++)
@@ -245,15 +246,12 @@ namespace SnakeGame.SnakeV3
                 _head = (xPos + x, yPos + y);
             }
             else
-            {
                 _head = (xPos, yPos);
-            }
 
             bool isAlive = true;
             if (WallCollide() || BodyCollide()) isAlive = false;
             if (!_isHumanPlaying && _gameState != GameState.REPLAY) _replay.ReplayBody.Add((_head.x, _head.y));
 
-            _grid[_head.x][_head.y] = GameObject.HEAD;
             for (int i = 0; i < _body.Count; i++)
             {
                 _grid[prev.x][prev.y] = GameObject.BODY;
@@ -261,7 +259,9 @@ namespace SnakeGame.SnakeV3
                 _body[i] = prev;
                 prev = temp;
             }
+            _grid[_head.x][_head.y] = GameObject.HEAD;
             _grid[prev.x][prev.y] = GameObject.FLOOR;
+
             return isAlive;
         }
 

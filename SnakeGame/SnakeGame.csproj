@@ -138,11 +138,11 @@
   <ItemGroup>
     <Compile Include="AI_V2\Food.cs" />
     <Compile Include="AI_V2\Matrix.cs" />
+    <Compile Include="AI_V2\NeuralNet.cs" />
     <Compile Include="AI_V2\Population.cs" />
     <Compile Include="AI_V2\Snake.cs" />
     <Compile Include="AI_V2\SnakeAI.cs" />
     <Compile Include="AI_V2\Utility.cs" />
-    <Compile Include="AI_V2\NeuralNet.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SnakeV3\Board.cs" />
@@ -174,6 +174,7 @@
     <Content Include="NeuralNetwork\27-NeuralNetworkSaveFile.txt" />
     <Content Include="NeuralNetwork\29-NeuralNetworkSaveFile.txt" />
     <Content Include="NeuralNetwork\30-NeuralNetworkSaveFile.txt" />
+    <Content Include="NeuralNetwork\31-NeuralNetworkSaveFile.txt" />
     <Content Include="NeuralNetwork\32-NeuralNetworkSaveFile.txt" />
     <Content Include="NeuralNetwork\33-NeuralNetworkSaveFile.txt" />
     <Content Include="NeuralNetwork\34-NeuralNetworkSaveFile.txt" />
@@ -185,10 +186,32 @@
     <Content Include="NeuralNetwork\4-NeuralNetworkSaveFile.txt" />
     <Content Include="NeuralNetwork\40-NeuralNetworkSaveFile.txt" />
     <Content Include="NeuralNetwork\41-NeuralNetworkSaveFile.txt" />
+    <Content Include="NeuralNetwork\42-NeuralNetworkSaveFile.txt" />
     <Content Include="NeuralNetwork\43-NeuralNetworkSaveFile.txt" />
+    <Content Include="NeuralNetwork\44-NeuralNetworkSaveFile.txt" />
+    <Content Include="NeuralNetwork\45-NeuralNetworkSaveFile.txt" />
     <Content Include="NeuralNetwork\46-NeuralNetworkSaveFile.txt" />
+    <Content Include="NeuralNetwork\47-NeuralNetworkSaveFile.txt" />
+    <Content Include="NeuralNetwork\49-NeuralNetworkSaveFile.txt" />
+    <Content Include="NeuralNetwork\50-NeuralNetworkSaveFile.txt" />
+    <Content Include="NeuralNetwork\51-NeuralNetworkSaveFile.txt" />
+    <Content Include="NeuralNetwork\52-NeuralNetworkSaveFile.txt" />
+    <Content Include="NeuralNetwork\53-NeuralNetworkSaveFile.txt" />
+    <Content Include="NeuralNetwork\56-NeuralNetworkSaveFile.txt" />
+    <Content Include="NeuralNetwork\59-NeuralNetworkSaveFile.txt" />
     <Content Include="NeuralNetwork\6-NeuralNetworkSaveFile.txt" />
+    <Content Include="NeuralNetwork\60-NeuralNetworkSaveFile.txt" />
     <Content Include="NeuralNetwork\9-NeuralNetworkSaveFile.txt" />
+    <Content Include="SavedReplays\Score 39 20-09-2021.txt" />
+    <Content Include="SavedReplays\Score 42 20-09-2021.txt" />
+    <Content Include="SavedReplays\Score 43 20-09-2021.txt" />
+    <Content Include="SavedReplays\Score 49 20-09-2021.txt" />
+    <Content Include="SavedReplays\Score 50 20-09-2021.txt" />
+    <Content Include="SavedReplays\Score 51 20-09-2021.txt" />
+    <Content Include="SavedReplays\Score 52 20-09-2021.txt" />
+    <Content Include="SavedReplays\Score 56 20-09-2021.txt" />
+    <Content Include="SavedReplays\Score 59 20-09-2021.txt" />
+    <Content Include="SavedReplays\Score 60 20-09-2021.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Fody.6.0.5\build\Fody.targets" Condition="Exists('..\packages\Fody.6.0.5\build\Fody.targets')" />
