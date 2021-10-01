@@ -78,9 +78,7 @@ namespace SnakeGame.SnakeV3
                     AIMove();
                 }
                 else
-                {
                     HumanMove();
-                }
 
                 if (FoodCollide(_food.Position.x, _food.Position.y))
                     Eat();
@@ -305,22 +303,26 @@ namespace SnakeGame.SnakeV3
             double[] input = new double[Constants.INPUTS_COUNT];
             for (int i = 0; i < dirs.Count; i++)
             {
-                var (x, y) = dirs[i];
-                var dx = _head.x + x;
-                var dy = _head.y + y;
+                (int x, int y) = dirs[i];
+                int dx = _head.x + x;
+                int dy = _head.y + y;
                 double value = Convert.ToDouble(_grid[dx][dy] == GameObject.FLOOR || _grid[dx][dy] == GameObject.FOOD);
-                input[i] = value * 2 - 1;
+                input[i] = value;
             }
 
-            input[4] = Convert.ToDouble(_food.Position.y < _head.y) * 2 - 1;
-            input[5] = Convert.ToDouble(_food.Position.x > _head.x) * 2 - 1;
-            input[6] = Convert.ToDouble(_food.Position.y > _head.y) * 2 - 1;
-            input[7] = Convert.ToDouble(_food.Position.x < _head.x) * 2 - 1;
+            input[4] = Convert.ToDouble(_food.Position.y < _head.y);
+            input[5] = Convert.ToDouble(_food.Position.x > _head.x);
+            input[6] = Convert.ToDouble(_food.Position.y > _head.y);
+            input[7] = Convert.ToDouble(_food.Position.x < _head.x);
 
-            var output = Brain.Compute(input).ToList();
-            var max = output.Max();
-            var maxIndex = output.IndexOf(max);
+            for (int i = 0; i < input.Length; i++)
+            {
+                input[i] = input[i] * 2 - 1;
+            }
 
+            List<double> output = Brain.Compute(input).ToList();
+            double max = output.Max();
+            int maxIndex = output.IndexOf(max);
             switch (maxIndex)
             {
                 case 0:

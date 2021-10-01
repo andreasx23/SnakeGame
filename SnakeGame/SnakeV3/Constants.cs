@@ -17,6 +17,6 @@ namespace SnakeGame.SnakeV3
         public const int MAX_MUTATION_COUNT = 5;
 
         //GAME
-        public const int FPS = 10;
+        public const int FPS = 1;
     }
 }

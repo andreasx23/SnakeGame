@@ -1,6 +1,7 @@
 ﻿using AForge.Neuro;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -21,10 +22,37 @@ namespace SnakeGame.SnakeV3
             _rand = new Random();
         }
 
+        public NeuralNetwork Clone()
+        {
+            double alpha = GetNetworkAlpha(this);
+            NeuralNetwork clone = NewNeuralNetwork(alpha);
+
+            Layer[] myLayers = layers;
+            for (int i = 0; i < myLayers.Length; i++)
+            {
+                ActivationLayer myLayer = (ActivationLayer)myLayers[i];
+                ActivationLayer cloneLayer = (ActivationLayer)clone.layers[i];
+                for (int j = 0; j < myLayer.Neurons.Length; j++)
+                {
+                    ActivationNeuron myNeuron = (ActivationNeuron)myLayer.Neurons[j];
+                    ActivationNeuron cloneNeuron = (ActivationNeuron)cloneLayer.Neurons[j];
+                    double threshold = myNeuron.Threshold;
+                    cloneNeuron.Threshold = threshold;
+                    for (int k = 0; k < myNeuron.Weights.Length; k++)
+                    {
+                        double weight = myNeuron.Weights[k];
+                        cloneNeuron.Weights[k] = weight;
+                    }
+                }
+            }
+
+            return clone;
+        }
+
         public void SaveNetwork(int score)
         {
-            string path = Utility.GetCurrentDirectoryPath();
-            string directoryCombine = Path.Combine(path, DIRECTORY_NAME);
+            string currentDirectoryPath = Utility.GetCurrentDirectoryPath();
+            string directoryCombine = Path.Combine(currentDirectoryPath, DIRECTORY_NAME);
             if (!Directory.Exists(directoryCombine)) Directory.CreateDirectory(directoryCombine);
 
             string fileName = $"{score}{SAVE_LOAD_NETWORK_SUFFIX}";
@@ -44,22 +72,20 @@ namespace SnakeGame.SnakeV3
         /// <returns>Returns a presaved network file if one exists else null</returns>
         public static NeuralNetwork LoadNetwork(int score = -1)
         {
-            string path = Utility.GetCurrentDirectoryPath();
-            string directoryCombine = Path.Combine(path, DIRECTORY_NAME);
+            string currentDirectoryPath = Utility.GetCurrentDirectoryPath();
+            string directoryCombine = Path.Combine(currentDirectoryPath, DIRECTORY_NAME);
             if (!Directory.Exists(directoryCombine)) return null;
 
             string fileCombine = string.Empty;
             if (score == -1)
             {
-                string[] files = Directory.GetFiles(directoryCombine);
+                IEnumerable<string> files = Directory.GetFiles(directoryCombine).Where(file => file.EndsWith(SAVE_LOAD_NETWORK_SUFFIX));
                 int maxScore = -1;
                 foreach (var filePathFromDirectory in files)
                 {
                     string fileName = Path.GetFileName(filePathFromDirectory);
-                    if (!fileName.EndsWith(SAVE_LOAD_NETWORK_SUFFIX)) continue;
                     string[] split = fileName.Split('-');
-                    int currentScore = int.Parse(split.First());
-                    if (currentScore > maxScore)
+                    if (int.TryParse(split.First(), out int currentScore) && currentScore > maxScore)
                     {
                         maxScore = currentScore;
                         fileCombine = filePathFromDirectory;
@@ -72,7 +98,7 @@ namespace SnakeGame.SnakeV3
                 fileCombine = Path.Combine(directoryCombine, fileName);
             }
 
-            if (!File.Exists(fileCombine)) return null;
+            if (string.IsNullOrEmpty(fileCombine) || !File.Exists(fileCombine)) return null;
 
             NeuralNetwork neuralNetwork = (NeuralNetwork)Load(fileCombine);
             return neuralNetwork;
@@ -87,10 +113,12 @@ namespace SnakeGame.SnakeV3
                 {
                     int layerIndex = _rand.Next(layers.Length);
                     Layer layer = layers[layerIndex];
+                    //layer.Randomize(); //Randomizes all neurons weights
                     int neuronIndex = _rand.Next(layer.Neurons.Length);
-                    Neuron neurons = layer.Neurons[neuronIndex];
-                    int weightIndex = _rand.Next(neurons.Weights.Length);
-                    neurons.Weights[weightIndex] = _rand.NextDouble();
+                    Neuron neuron = layer.Neurons[neuronIndex];
+                    //neuron.Randomize(); //Randomizes current selected neurons weights
+                    int weightIndex = _rand.Next(neuron.Weights.Length);
+                    neuron.Weights[weightIndex] = _rand.NextDouble();
                 }
             }
         }
@@ -98,7 +126,7 @@ namespace SnakeGame.SnakeV3
         public NeuralNetwork Breed(NeuralNetwork other)
         {
             double alpha = ChooseAlpha(other);
-            NeuralNetwork child = new NeuralNetwork(new BipolarSigmoidFunction(alpha), Constants.INPUTS_COUNT, Constants.NEURONS, Constants.OUTPUT_COUNT);
+            NeuralNetwork child = NewNeuralNetwork(alpha);
             ChooseWeights(other, child);
             return child;
         }
@@ -139,7 +167,7 @@ namespace SnakeGame.SnakeV3
                 case 0: return myAlpha;
                 case 1: return otherAlpha;
                 case 2: return _rand.NextDouble();
-                default: throw new Exception("Invalid value exception");
+                default: throw new Exception("Invalid value");
             }
         }
 
@@ -147,6 +175,14 @@ namespace SnakeGame.SnakeV3
         {
             var activationFunction = (BipolarSigmoidFunction)((ActivationNeuron)network.Layers[0].Neurons[0]).ActivationFunction;
             return activationFunction.Alpha;
+        }
+
+        private NeuralNetwork NewNeuralNetwork(double alpha = -1d)
+        {
+            if (alpha != -1d)
+                return new NeuralNetwork(new BipolarSigmoidFunction(alpha), Constants.INPUTS_COUNT, Constants.NEURONS, Constants.OUTPUT_COUNT);
+            else
+                return new NeuralNetwork(new BipolarSigmoidFunction(), Constants.INPUTS_COUNT, Constants.NEURONS, Constants.OUTPUT_COUNT);
         }
         #endregion
     }
