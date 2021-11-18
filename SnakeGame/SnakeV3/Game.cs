@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -35,7 +36,7 @@ namespace SnakeGame.SnakeV3
                 for (int j = 0; j < POPULATION_SIZE; j++)
                     _boards.Add(new Board(height, width, isHumanPlaying));
 
-                bool shouldLoadPresavedNetworkFile = false;
+                bool shouldLoadPresavedNetworkFile = true;
                 NeuralNetwork load = NeuralNetwork.LoadNetwork();
                 for (int i = 0; i < POPULATION_SIZE; i++)
                 {
@@ -59,6 +60,7 @@ namespace SnakeGame.SnakeV3
             }
             else
             {
+                Stopwatch watch = Stopwatch.StartNew();
                 while (true)
                 {
                     for (int i = 0; i < POPULATION_SIZE; i++)
@@ -67,13 +69,16 @@ namespace SnakeGame.SnakeV3
                         _boards[i].Play();
                     }
 
+                    long totalScoreThisGeneration = 0;
                     BigInteger totalFitnessScoreThisGeneration = BigInteger.Zero;
                     BigInteger bestFitnessThisGeneration = -1;
                     int bestScoreThisGeneration = -1;
                     int index = -1;
                     for (int i = 0; i < POPULATION_SIZE; i++)
                     {
+                        totalScoreThisGeneration += _boards[i].Score;
                         totalFitnessScoreThisGeneration += _boards[i].Fitness;
+
                         if (_boards[i].Fitness > bestFitnessThisGeneration)
                         {
                             index = i;                            
@@ -94,15 +99,16 @@ namespace SnakeGame.SnakeV3
                     }
 
                     Console.WriteLine($"Currently using neurons: {Constants.NEURONS}");
-                    Console.WriteLine($"Current best fitness-score: {_bestFitness}");
-                    Console.WriteLine($"Current best score: {_bestScore}");
-                    Console.WriteLine($"Generation: {_generation}");
                     Console.WriteLine($"Population size: {POPULATION_SIZE}");
+                    Console.WriteLine($"Generation: {_generation}");
                     Console.WriteLine($"Total games played this session: {_generation * POPULATION_SIZE}");
-                    Console.WriteLine($"Best score this generation: {bestScoreThisGeneration}");
+                    Console.WriteLine($"Been running for: {watch.Elapsed}");
+                    Console.WriteLine($"Best overall fitness-score: {_bestFitness}");
+                    Console.WriteLine($"Best overall score: {_bestScore}");
                     Console.WriteLine($"Best fitness-score this generation: {bestFitnessThisGeneration}");
-                    Console.WriteLine($"Average score this generation: {_boards.Average(b => b.Score)}");
-                    Console.WriteLine($"Average fitness score this generation: {totalFitnessScoreThisGeneration / POPULATION_SIZE}");
+                    Console.WriteLine($"Average fitness-score this generation: {totalFitnessScoreThisGeneration / POPULATION_SIZE}");
+                    Console.WriteLine($"Best score this generation: {bestScoreThisGeneration}");
+                    Console.WriteLine($"Average score this generation: {totalScoreThisGeneration / POPULATION_SIZE}");
                     Console.WriteLine();
 
                     for (int i = 0; i < POPULATION_SIZE; i++)
