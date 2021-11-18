@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,7 +32,9 @@ namespace SnakeGame.SnakeV3
         private Direction _direction;
 
         public NeuralNetwork Brain;
-        public int Fitness = 0;
+        public BigInteger Fitness = 0;
+
+        public int GenerationId;
 
         public Board(int height, int width, bool isHumanPlaying)
         {
@@ -169,13 +172,11 @@ namespace SnakeGame.SnakeV3
         private void CalculateFitness()
         {
             if (Score < 10)
-            {
-                Fitness = _totalMoves * _totalMoves + (int)Math.Pow(2, Score);
-            }
+                Fitness = _totalMoves * _totalMoves + BigInteger.Pow(2, Score);
             else
             {
                 Fitness = _totalMoves * _totalMoves;
-                Fitness *= (int)Math.Pow(2, 10);
+                Fitness *= BigInteger.Pow(2, 10);
                 Fitness *= Score - 9;
             }
         }
@@ -300,27 +301,25 @@ namespace SnakeGame.SnakeV3
                 (-1, 0) //Up
             };
 
-            double[] input = new double[Constants.INPUTS_COUNT];
+            double[] inputs = new double[Constants.INPUTS_COUNT];
             for (int i = 0; i < dirs.Count; i++)
             {
                 (int x, int y) = dirs[i];
                 int dx = _head.x + x;
                 int dy = _head.y + y;
                 double value = Convert.ToDouble(_grid[dx][dy] == GameObject.FLOOR || _grid[dx][dy] == GameObject.FOOD);
-                input[i] = value;
+                inputs[i] = value;
             }
 
-            input[4] = Convert.ToDouble(_food.Position.y < _head.y);
-            input[5] = Convert.ToDouble(_food.Position.x > _head.x);
-            input[6] = Convert.ToDouble(_food.Position.y > _head.y);
-            input[7] = Convert.ToDouble(_food.Position.x < _head.x);
+            inputs[4] = Convert.ToDouble(_food.Position.y < _head.y);
+            inputs[5] = Convert.ToDouble(_food.Position.x > _head.x);
+            inputs[6] = Convert.ToDouble(_food.Position.y > _head.y);
+            inputs[7] = Convert.ToDouble(_food.Position.x < _head.x);
 
-            for (int i = 0; i < input.Length; i++)
-            {
-                input[i] = input[i] * 2 - 1;
-            }
+            for (int i = 0; i < inputs.Length; i++)
+                inputs[i] = inputs[i] * 2 - 1;
 
-            List<double> output = Brain.Compute(input).ToList();
+            List<double> output = Brain.Compute(inputs).ToList();
             double max = output.Max();
             int maxIndex = output.IndexOf(max);
             switch (maxIndex)

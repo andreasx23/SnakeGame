@@ -10,7 +10,7 @@ namespace SnakeGame.SnakeV3
 {
     public class ReplayDTO
     {
-        private const string DIRECTORY_NAME = "SavedReplays";
+        private const string DIRECTORY_NAME = @"SavedReplays\Result";
 
         public int Height { get; private set; }
         public int Width { get; private set; }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,8 +17,9 @@ namespace SnakeGame.SnakeV3
 
         private NeuralNetwork _bestBrain;
         private int _bestScore = 0;
-        private int _bestFitness = 0;
+        private BigInteger _bestFitness = 0;
         private int _generation = 1;
+        private const int POPULATION_SIZE = 5000;
 
         public Game(int height, int width, bool isHumanPlaying)
         {
@@ -27,18 +29,20 @@ namespace SnakeGame.SnakeV3
             _isHumanPlaying = isHumanPlaying;
 
             if (isHumanPlaying)
-                _boards.Add(new Board(_height, _width, isHumanPlaying));
+                _boards.Add(new Board(height, width, isHumanPlaying));
             else
             {
-                bool shouldLoadPresavedNetworkFile = true;
-                int populationSize = 5000;
+                for (int j = 0; j < POPULATION_SIZE; j++)
+                    _boards.Add(new Board(height, width, isHumanPlaying));
+
+                bool shouldLoadPresavedNetworkFile = false;
                 NeuralNetwork load = NeuralNetwork.LoadNetwork();
-                for (int i = 0; i < populationSize; i++)
+                for (int i = 0; i < POPULATION_SIZE; i++)
                 {
                     if (shouldLoadPresavedNetworkFile)
-                        _boards.Add(new Board(_height, _width, load.Clone()));
+                        _boards.Add(new Board(height, width, load.Clone()));
                     else
-                        _boards.Add(new Board(_height, _width, isHumanPlaying));
+                        _boards.Add(new Board(height, width, isHumanPlaying));
                 }
             }
         }
@@ -57,41 +61,51 @@ namespace SnakeGame.SnakeV3
             {
                 while (true)
                 {
-                    foreach (var board in _boards)
+                    for (int i = 0; i < POPULATION_SIZE; i++)
                     {
-                        board.Play();
+                        _boards[i].GenerationId = (i + 1) + (_generation * POPULATION_SIZE);
+                        _boards[i].Play();
                     }
 
-                    int n = _boards.Count;
+                    BigInteger totalFitnessScoreThisGeneration = BigInteger.Zero;
+                    BigInteger bestFitnessThisGeneration = -1;
                     int bestScoreThisGeneration = -1;
-                    int bestScoreIndexThisGeneration = -1;
-                    for (int i = 0; i < n; i++)
+                    int index = -1;
+                    for (int i = 0; i < POPULATION_SIZE; i++)
                     {
-                        if (_boards[i].Score > bestScoreThisGeneration)
+                        totalFitnessScoreThisGeneration += _boards[i].Fitness;
+                        if (_boards[i].Fitness > bestFitnessThisGeneration)
                         {
-                            bestScoreThisGeneration = _boards[i].Score;
-                            bestScoreIndexThisGeneration = i;
+                            index = i;                            
+                            bestFitnessThisGeneration = _boards[i].Fitness;
                         }
+
+                        if (_boards[i].Score > bestScoreThisGeneration)
+                            bestScoreThisGeneration = _boards[i].Score;
                     }
 
-                    if (_bestBrain == null || bestScoreThisGeneration > _bestScore)
+                    if (_bestBrain == null || bestFitnessThisGeneration > _bestFitness)
                     {
-                        _bestBrain = _boards[bestScoreIndexThisGeneration].Brain.Clone();
-                        _bestScore = bestScoreThisGeneration;
+                        _bestBrain = _boards[index].Brain.Clone();
+                        _bestScore = Math.Max(_bestScore, bestScoreThisGeneration);
+                        _bestFitness = bestFitnessThisGeneration;
                         _bestBrain.SaveNetwork(_bestScore);
-                        _boards[bestScoreIndexThisGeneration].PlayReplay(true);
+                        _boards[index].PlayReplay(true);
                     }
 
-                    Console.WriteLine($"Best score: {_bestScore}");
+                    Console.WriteLine($"Currently using neurons: {Constants.NEURONS}");
+                    Console.WriteLine($"Current best fitness-score: {_bestFitness}");
+                    Console.WriteLine($"Current best score: {_bestScore}");
                     Console.WriteLine($"Generation: {_generation}");
-                    Console.WriteLine($"Population size: {n}");
-                    Console.WriteLine($"Total games played this session: {_generation * n}");
+                    Console.WriteLine($"Population size: {POPULATION_SIZE}");
+                    Console.WriteLine($"Total games played this session: {_generation * POPULATION_SIZE}");
                     Console.WriteLine($"Best score this generation: {bestScoreThisGeneration}");
-                    double averageScore = _boards.Average(b => b.Score);
-                    Console.WriteLine($"Average score this generation: {averageScore}");
+                    Console.WriteLine($"Best fitness-score this generation: {bestFitnessThisGeneration}");
+                    Console.WriteLine($"Average score this generation: {_boards.Average(b => b.Score)}");
+                    Console.WriteLine($"Average fitness score this generation: {totalFitnessScoreThisGeneration / POPULATION_SIZE}");
                     Console.WriteLine();
 
-                    for (int i = 0; i < n; i++)
+                    for (int i = 0; i < POPULATION_SIZE; i++)
                     {
                         NeuralNetwork child = _bestBrain.Breed(_boards[i].Brain);
                         child.Mutate();

@@ -53,6 +53,7 @@ namespace SnakeGame.SnakeV3
         {
             string currentDirectoryPath = Utility.GetCurrentDirectoryPath();
             string directoryCombine = Path.Combine(currentDirectoryPath, DIRECTORY_NAME);
+            directoryCombine = Path.Combine(directoryCombine, "Result");
             if (!Directory.Exists(directoryCombine)) Directory.CreateDirectory(directoryCombine);
 
             string fileName = $"{score}{SAVE_LOAD_NETWORK_SUFFIX}";
@@ -113,10 +114,8 @@ namespace SnakeGame.SnakeV3
                 {
                     int layerIndex = _rand.Next(layers.Length);
                     Layer layer = layers[layerIndex];
-                    //layer.Randomize(); //Randomizes all neurons weights
                     int neuronIndex = _rand.Next(layer.Neurons.Length);
                     Neuron neuron = layer.Neurons[neuronIndex];
-                    //neuron.Randomize(); //Randomizes current selected neurons weights
                     int weightIndex = _rand.Next(neuron.Weights.Length);
                     neuron.Weights[weightIndex] = _rand.NextDouble();
                 }

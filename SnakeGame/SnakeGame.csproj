@@ -154,6 +154,7 @@
     <Compile Include="SnakeV3\GameState.cs" />
     <Compile Include="SnakeV3\NeuralNetwork.cs" />
     <Compile Include="SnakeV3\ReplayDTO.cs" />
+    <Compile Include="SnakeV3\SchoolVersion.cs" />
     <Compile Include="SnakeV3\Utility.cs" />
   </ItemGroup>
   <ItemGroup>
